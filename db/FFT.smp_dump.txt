@@ -1,0 +1,10 @@
+
+State Machine - |FFT|state
+Name state.FINISH state.FINAL_TRANS state.FINAL state.TRANS state.COMPUTE state.READ state.IDLE 
+state.IDLE 0 0 0 0 0 0 0 
+state.READ 0 0 0 0 0 1 1 
+state.COMPUTE 0 0 0 0 1 0 1 
+state.TRANS 0 0 0 1 0 0 1 
+state.FINAL 0 0 1 0 0 0 1 
+state.FINAL_TRANS 0 1 0 0 0 0 1 
+state.FINISH 1 0 0 0 0 0 1 
