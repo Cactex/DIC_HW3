@@ -36,11 +36,16 @@ reg signed [31:0]stage2_real [0:15];
 reg signed [31:0]stage2_image[0:15];
 reg signed [31:0]stage3_real [0:15];
 reg signed [31:0]stage3_image[0:15];
+reg signed [31:0]mul_buf[0:15];
 
 reg signed  [31:0] M0_mult1, M0_mult2, M4_mult1, M4_mult2;
 reg signed  [31:0] M1_mult1, M1_mult2, M5_mult1, M5_mult2;
 reg signed  [31:0] M2_mult1, M2_mult2, M6_mult1, M6_mult2;
 reg signed  [31:0] M3_mult1, M3_mult2, M7_mult1, M7_mult2;
+reg signed  [31:0] M8_mult1, M8_mult2, M12_mult1, M12_mult2;
+reg signed  [31:0] M9_mult1, M9_mult2, M13_mult1, M13_mult2;
+reg signed  [31:0] M10_mult1, M10_mult2, M14_mult1, M14_mult2;
+reg signed  [31:0] M11_mult1, M11_mult2, M15_mult1, M15_mult2;
 //multipler
 wire signed [63:0] M0 = M0_mult1 * M0_mult2;
 wire signed [63:0] M1 = M1_mult1 * M1_mult2;
@@ -50,6 +55,15 @@ wire signed [63:0] M4 = M4_mult1 * M4_mult2;
 wire signed [63:0] M5 = M5_mult1 * M5_mult2;
 wire signed [63:0] M6 = M6_mult1 * M6_mult2;
 wire signed [63:0] M7 = M7_mult1 * M7_mult2;
+wire signed [63:0] M8 = M8_mult1 * M8_mult2;
+wire signed [63:0] M9 = M9_mult1 * M9_mult2;
+wire signed [63:0] M10 = M10_mult1 * M10_mult2;
+wire signed [63:0] M11 = M11_mult1 * M11_mult2;
+wire signed [63:0] M12 = M12_mult1 * M12_mult2;
+wire signed [63:0] M13 = M13_mult1 * M13_mult2;
+wire signed [63:0] M14 = M14_mult1 * M14_mult2;
+wire signed [63:0] M15 = M15_mult1 * M15_mult2;
+
 wire signed [31:0]w0_real = 32'h00010000, w0_image = 32'h00000000, w1_real = 32'h0000EC83, w1_image =  32'hFFFF9E09,
             w2_real = 32'h0000B504, w2_image = 32'hFFFF4AFC, w3_real = 32'h000061F7, w3_image =  32'hFFFF137D,
             w4_real = 32'h00000000, w4_image = 32'hFFFF0000, w5_real = 32'hFFFF9E09, w5_image =  32'hFFFF137D,
@@ -165,28 +179,31 @@ always@(posedge clk) begin
                         proceed_fir[14] <= input_fir[14];
                         proceed_fir[15] <= input_fir[15];
 
-                        //stage0 (a-c) * real
-                        M0_mult1 <= {{8{input_fir[0][15]}}, input_fir[0], 8'd0} - {{8{input_fir[8][15]}}, input_fir[8], 8'd0};                                    
-                        M1_mult1 <= {{8{input_fir[1][15]}}, input_fir[1], 8'd0} - {{8{input_fir[9][15]}}, input_fir[9], 8'd0};                       
-                        M2_mult1 <= {{8{input_fir[2][15]}}, input_fir[2], 8'd0} - {{8{input_fir[10][15]}}, input_fir[10], 8'd0};                      
-                        M3_mult1 <= {{8{input_fir[3][15]}}, input_fir[3], 8'd0} - {{8{input_fir[11][15]}}, input_fir[11], 8'd0};                        
-                        M4_mult1 <= {{8{input_fir[4][15]}}, input_fir[4], 8'd0} - {{8{input_fir[12][15]}}, input_fir[12], 8'd0};                  
-                        M5_mult1 <= {{8{input_fir[5][15]}}, input_fir[5], 8'd0} - {{8{input_fir[13][15]}}, input_fir[13], 8'd0};
-                        M6_mult1 <= {{8{input_fir[6][15]}}, input_fir[6], 8'd0} - {{8{input_fir[14][15]}}, input_fir[14], 8'd0};
-                        M7_mult1 <= {{8{input_fir[7][15]}}, input_fir[7], 8'd0} - {{8{input_fir[15][15]}}, input_fir[15], 8'd0};
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w1_real;
-                        M2_mult2 <= w2_real;
-                        M3_mult2 <= w3_real;
-                        M4_mult2 <= w4_real;
-                        M5_mult2 <= w5_real;
-                        M6_mult2 <= w6_real;
-                        M7_mult2 <= w7_real;
+                        //stage0 (a-c) buffer
+                        mul_buf[0] <= {{8{input_fir[0][15]}}, input_fir[0], 8'd0} - {{8{input_fir[8][15]}}, input_fir[8], 8'd0};
+                        mul_buf[1] <= {{8{input_fir[1][15]}}, input_fir[1], 8'd0} - {{8{input_fir[9][15]}}, input_fir[9], 8'd0};
+                        mul_buf[2] <= {{8{input_fir[2][15]}}, input_fir[2], 8'd0} - {{8{input_fir[10][15]}}, input_fir[10], 8'd0};
+                        mul_buf[3] <= {{8{input_fir[3][15]}}, input_fir[3], 8'd0} - {{8{input_fir[11][15]}}, input_fir[11], 8'd0};
+                        mul_buf[4] <= {{8{input_fir[4][15]}}, input_fir[4], 8'd0} - {{8{input_fir[12][15]}}, input_fir[12], 8'd0};
+                        mul_buf[5] <= {{8{input_fir[5][15]}}, input_fir[5], 8'd0} - {{8{input_fir[13][15]}}, input_fir[13], 8'd0};
+                        mul_buf[6] <= {{8{input_fir[6][15]}}, input_fir[6], 8'd0} - {{8{input_fir[14][15]}}, input_fir[14], 8'd0};
+                        mul_buf[7] <= {{8{input_fir[7][15]}}, input_fir[7], 8'd0} - {{8{input_fir[15][15]}}, input_fir[15], 8'd0};
+                        //stage0 (b-d) buffer
+                        mul_buf[8] <= 32'd0;
+                        mul_buf[9] <= 32'd0;
+                        mul_buf[10] <= 32'd0;
+                        mul_buf[11] <= 32'd0;
+                        mul_buf[12] <= 32'd0;
+                        mul_buf[13] <= 32'd0;
+                        mul_buf[14] <= 32'd0;
+                        mul_buf[15] <= 32'd0;
 
                     end
                     //stage0 
                     4'd1: begin
                         input_fir[read_count] <= fir_d;
+                        
+                        //stage0 ffta real & image
                         stage0_real[0] <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} + {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};
                         stage0_real[1] <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} + {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};
                         stage0_real[2] <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} + {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
@@ -195,15 +212,6 @@ always@(posedge clk) begin
                         stage0_real[5] <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} + {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
                         stage0_real[6] <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} + {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
                         stage0_real[7] <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} + {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
-                                                
-                        stage0_real[8] <= M0[47:16];
-                        stage0_real[9] <= M1[47:16];
-                        stage0_real[10] <= M2[47:16];
-                        stage0_real[11] <= M3[47:16];
-                        stage0_real[12] <= M4[47:16];
-                        stage0_real[13] <= M5[47:16];
-                        stage0_real[14] <= M6[47:16];
-                        stage0_real[15] <= M7[47:16];
 
                         stage0_image[0] <= 32'd0;
                         stage0_image[1] <= 32'd0;
@@ -214,15 +222,67 @@ always@(posedge clk) begin
                         stage0_image[6] <= 32'd0;
                         stage0_image[7] <= 32'd0;
 
+                        //stage0 fftb real mul
+                        //stage0 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
+                        M0_mult2 <= w0_real;
+                        M1_mult2 <= w1_real;
+                        M2_mult2 <= w2_real;
+                        M3_mult2 <= w3_real;
+                        M4_mult2 <= w4_real;
+                        M5_mult2 <= w5_real;
+                        M6_mult2 <= w6_real;
+                        M7_mult2 <= w7_real;
+
+                        //stage0 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w1_image;
+                        M10_mult2 <= w2_image;
+                        M11_mult2 <= w3_image;
+                        M12_mult2 <= w4_image;
+                        M13_mult2 <= w5_image;
+                        M14_mult2 <= w6_image;
+                        M15_mult2 <= w7_image;
+                        
+                    end
+                    4'd2: begin
+                        input_fir[read_count] <= fir_d;
+                        
+                        //stage 0 fftb real get value
+                        stage0_real[8] <= M0[47:16] + M8[47:16];
+                        stage0_real[9] <= M1[47:16] + M9[47:16];
+                        stage0_real[10] <= M2[47:16] + M10[47:16];
+                        stage0_real[11] <= M3[47:16] + M11[47:16];
+                        stage0_real[12] <= M4[47:16] + M12[47:16];
+                        stage0_real[13] <= M5[47:16] + M13[47:16];
+                        stage0_real[14] <= M6[47:16] + M14[47:16];
+                        stage0_real[15] <= M7[47:16] + M15[47:16];
+
+                        //stage0 fftb image mul
                         //stage0 (a-c) * image
-                        M0_mult1 <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} - {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};  
-                        M1_mult1 <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} - {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};  
-                        M2_mult1 <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} - {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
-                        M3_mult1 <= {{8{proceed_fir[3][15]}}, proceed_fir[3], 8'd0} - {{8{proceed_fir[11][15]}}, proceed_fir[11], 8'd0};
-                        M4_mult1 <= {{8{proceed_fir[4][15]}}, proceed_fir[4], 8'd0} - {{8{proceed_fir[12][15]}}, proceed_fir[12], 8'd0};
-                        M5_mult1 <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} - {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
-                        M6_mult1 <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} - {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
-                        M7_mult1 <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} - {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w1_image;
                         M2_mult2 <= w2_image;
@@ -231,21 +291,69 @@ always@(posedge clk) begin
                         M5_mult2 <= w5_image;
                         M6_mult2 <= w6_image;
                         M7_mult2 <= w7_image;
+
+                        //stage0 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w1_real;
+                        M10_mult2 <= w2_real;
+                        M11_mult2 <= w3_real;
+                        M12_mult2 <= w4_real;
+                        M13_mult2 <= w5_real;
+                        M14_mult2 <= w6_real;
+                        M15_mult2 <= w7_real;
+
+                                                                                                                                                                                                                                                                                                          
                     end
-                    4'd2: begin
+                    4'd3: begin
                         input_fir[read_count] <= fir_d;
                         
-                        stage0_image[8]  <= M0[47:16];
-                        stage0_image[9]  <= M1[47:16];
-                        stage0_image[10] <= M2[47:16];
-                        stage0_image[11] <= M3[47:16];
-                        stage0_image[12] <= M4[47:16];
-                        stage0_image[13] <= M5[47:16];
-                        stage0_image[14] <= M6[47:16];
-                        stage0_image[15] <= M7[47:16];
-                        //stage 0 finish
+                        stage0_image[8] <= M0[47:16] + M8[47:16];
+                        stage0_image[9] <= M1[47:16] + M9[47:16];
+                        stage0_image[10] <= M2[47:16] + M10[47:16];
+                        stage0_image[11] <= M3[47:16] + M11[47:16];
+                        stage0_image[12] <= M4[47:16] + M12[47:16];
+                        stage0_image[13] <= M5[47:16] + M13[47:16];
+                        stage0_image[14] <= M6[47:16] + M14[47:16];
+                        stage0_image[15] <= M7[47:16] + M15[47:16];
+                        //stage0 finish
 
-                        //stage 1 
+                    end
+                    4'd4: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage1 
+                        //stage1 (a-c) buffer
+                        mul_buf[0] <= stage0_real[0] - stage0_real[4];  
+                        mul_buf[1] <= stage0_real[1] - stage0_real[5];  
+                        mul_buf[2] <= stage0_real[2] - stage0_real[6];  
+                        mul_buf[3] <= stage0_real[3] - stage0_real[7];  
+                        mul_buf[4] <= stage0_real[8] - stage0_real[12]; 
+                        mul_buf[5] <= stage0_real[9] - stage0_real[13];
+                        mul_buf[6] <= stage0_real[10] - stage0_real[14];
+                        mul_buf[7] <= stage0_real[11] - stage0_real[15];
+                        //stage1 (b-d) buffer
+                        mul_buf[8] <= stage0_image[0] - stage0_image[4];  
+                        mul_buf[9] <= stage0_image[1] - stage0_image[5];  
+                        mul_buf[10] <= stage0_image[2] - stage0_image[6];  
+                        mul_buf[11] <= stage0_image[3] - stage0_image[7];  
+                        mul_buf[12] <= stage0_image[8] - stage0_image[12]; 
+                        mul_buf[13] <= stage0_image[9] - stage0_image[13];
+                        mul_buf[14] <= stage0_image[10] - stage0_image[14];
+                        mul_buf[15] <= stage0_image[11] - stage0_image[15];
+                   
+                    end
+                    4'd5: begin
+                        input_fir[read_count] <= fir_d;
+                        
+                        //stage1 ffta real & image 
                         stage1_real[0] <= stage0_real[0] + stage0_real[4];
                         stage1_real[1] <= stage0_real[1] + stage0_real[5];
                         stage1_real[2] <= stage0_real[2] + stage0_real[6];
@@ -255,15 +363,25 @@ always@(posedge clk) begin
                         stage1_real[10] <= stage0_real[10] + stage0_real[14];
                         stage1_real[11] <= stage0_real[11] + stage0_real[15];
 
-                        // stage 1 (a-c) * real
-                        M0_mult1 <= stage0_real[0] - stage0_real[4];                                  
-                        M1_mult1 <= stage0_real[1] - stage0_real[5];                     
-                        M2_mult1 <= stage0_real[2] - stage0_real[6];                      
-                        M3_mult1 <= stage0_real[3] - stage0_real[7];                        
-                        M4_mult1 <= stage0_real[8] - stage0_real[12];                  
-                        M5_mult1 <= stage0_real[9] - stage0_real[13];
-                        M6_mult1 <= stage0_real[10] - stage0_real[14];
-                        M7_mult1 <= stage0_real[11] - stage0_real[15];
+                        stage1_image[0] <= stage0_image[0] + stage0_image[4];
+                        stage1_image[1] <= stage0_image[1] + stage0_image[5];
+                        stage1_image[2] <= stage0_image[2] + stage0_image[6];     
+                        stage1_image[3] <= stage0_image[3] + stage0_image[7];
+                        stage1_image[8] <= stage0_image[8] + stage0_image[12];    
+                        stage1_image[9] <= stage0_image[9] + stage0_image[13];    
+                        stage1_image[10] <= stage0_image[10] + stage0_image[14];
+                        stage1_image[11] <= stage0_image[11] + stage0_image[15];
+
+                        //stage1 fftb real mul
+                        //stage1 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w2_real;
                         M2_mult2 <= w4_real;
@@ -272,30 +390,49 @@ always@(posedge clk) begin
                         M5_mult2 <= w2_real;
                         M6_mult2 <= w4_real;
                         M7_mult2 <= w6_real;
-                                                                                                                                                                                                                                                                                                          
+
+                        //stage1 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w2_image;
+                        M10_mult2 <= w4_image;
+                        M11_mult2 <= w6_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w2_image;
+                        M14_mult2 <= w4_image;
+                        M15_mult2 <= w6_image;
+
                     end
-                    4'd3: begin
+                    4'd6: begin
                         input_fir[read_count] <= fir_d;
-                        
-                        stage1_real[4] <= M0[47:16];
-                        stage1_real[5] <= M1[47:16];
-                        stage1_real[6] <= M2[47:16];
-                        stage1_real[7] <= M3[47:16];
-                        stage1_real[12] <= M4[47:16];
-                        stage1_real[13] <= M5[47:16];
-                        stage1_real[14] <= M6[47:16];
-                        stage1_real[15] <= M7[47:16];
 
-                        stage1_image[0] <= stage0_image[0] + stage0_image[4];
-                        stage1_image[1] <= stage0_image[1] + stage0_image[5];
-                        stage1_image[2] <= stage0_image[2] + stage0_image[6];                
-                        stage1_image[3] <= stage0_image[3] + stage0_image[7];
-                        stage1_image[8] <= stage0_image[8] + stage0_image[12];                       
-                        stage1_image[9] <= stage0_image[9] + stage0_image[13];                      
-                        stage1_image[10] <= stage0_image[10] + stage0_image[14];
-                        stage1_image[11] <= stage0_image[11] + stage0_image[15];
+                        //stage1 fftb real get value
+                        stage1_real[4] <= M0[47:16] + M8[47:16];
+                        stage1_real[5] <= M1[47:16] + M9[47:16];
+                        stage1_real[6] <= M2[47:16] + M10[47:16];
+                        stage1_real[7] <= M3[47:16] + M11[47:16];
+                        stage1_real[12] <= M4[47:16] + M12[47:16];
+                        stage1_real[13] <= M5[47:16] + M13[47:16];
+                        stage1_real[14] <= M6[47:16] + M14[47:16];
+                        stage1_real[15] <= M7[47:16] + M15[47:16];
 
-                        //stage 1 (a-c) * image
+                        //stage1 fftb image mul
+                        //stage1 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w2_image;
                         M2_mult2 <= w4_image;
@@ -305,84 +442,94 @@ always@(posedge clk) begin
                         M6_mult2 <= w4_image;
                         M7_mult2 <= w6_image;
 
-                    end
-                    4'd4: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage1_image[4] <= M0[47:16];
-                        stage1_image[5] <= M1[47:16];
-                        stage1_image[6] <= M2[47:16];
-                        stage1_image[7] <= M3[47:16];
-                        stage1_image[12] <= M4[47:16];
-                        stage1_image[13] <= M5[47:16];
-                        stage1_image[14] <= M6[47:16];
-                        stage1_image[15] <= M7[47:16];
-
-                        //stage 1 (d-b) * image
-                        M0_mult1 <= stage0_image[4] - stage0_image[0];    
-                        M1_mult1 <= stage0_image[5] - stage0_image[1];    
-                        M2_mult1 <= stage0_image[6] - stage0_image[2];    
-                        M3_mult1 <= stage0_image[7] - stage0_image[3];    
-                        M4_mult1 <= stage0_image[12] - stage0_image[8];   
-                        M5_mult1 <= stage0_image[13] - stage0_image[9];
-                        M6_mult1 <= stage0_image[14] - stage0_image[10];
-                        M7_mult1 <= stage0_image[15] - stage0_image[11];
-                   
-                    end
-                    4'd5: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage1_real[4] <=  stage1_real[4] + M0[47:16];
-                        stage1_real[5] <=  stage1_real[5] + M1[47:16];
-                        stage1_real[6] <=  stage1_real[6] + M2[47:16];
-                        stage1_real[7] <=  stage1_real[7] + M3[47:16];
-                        stage1_real[12] <= stage1_real[12] + M4[47:16];
-                        stage1_real[13] <= stage1_real[13] + M5[47:16];
-                        stage1_real[14] <= stage1_real[14] + M6[47:16];
-                        stage1_real[15] <= stage1_real[15] + M7[47:16];
-
-                        //stage 1 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w2_real;
-                        M2_mult2 <= w4_real;
-                        M3_mult2 <= w6_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w2_real;
-                        M6_mult2 <= w4_real;
-                        M7_mult2 <= w6_real;
-                    end
-                    4'd6: begin
-                        input_fir[read_count] <= fir_d;
+                        //stage1 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w2_real;
+                        M10_mult2 <= w4_real;
+                        M11_mult2 <= w6_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w2_real;
+                        M14_mult2 <= w4_real;
+                        M15_mult2 <= w6_real;
                         
-                        stage1_image[4] <= stage1_image[4] - M0[47:16];
-                        stage1_image[5] <= stage1_image[5] - M1[47:16];
-                        stage1_image[6] <= stage1_image[6] - M2[47:16];
-                        stage1_image[7] <= stage1_image[7] - M3[47:16];
-                        stage1_image[12] <= stage1_image[12] - M4[47:16];
-                        stage1_image[13] <= stage1_image[13] - M5[47:16];
-                        stage1_image[14] <= stage1_image[14] - M6[47:16];
-                        stage1_image[15] <= stage1_image[15] - M7[47:16];
+                    end
+                    4'd7: begin
+                        input_fir[read_count] <= fir_d;
+
+                        stage1_image[4] <= M0[47:16] + M8[47:16];
+                        stage1_image[5] <= M1[47:16] + M9[47:16];
+                        stage1_image[6] <= M2[47:16] + M10[47:16];
+                        stage1_image[7] <= M3[47:16] + M11[47:16];
+                        stage1_image[12] <= M4[47:16] + M12[47:16];
+                        stage1_image[13] <= M5[47:16] + M13[47:16];
+                        stage1_image[14] <= M6[47:16] + M14[47:16];
+                        stage1_image[15] <= M7[47:16] + M15[47:16];
                         //stage1 finish
 
-                        //stage2
+                    end
+                    4'd8: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage2 
+                        //stage2 (a-c) buffer
+                        mul_buf[0] <= stage1_real[0] - stage1_real[2];  
+                        mul_buf[1] <= stage1_real[1] - stage1_real[3];  
+                        mul_buf[2] <= stage1_real[4] - stage1_real[6];  
+                        mul_buf[3] <= stage1_real[5] - stage1_real[7];  
+                        mul_buf[4] <= stage1_real[8] - stage1_real[10]; 
+                        mul_buf[5] <= stage1_real[9] - stage1_real[11];
+                        mul_buf[6] <= stage1_real[12] - stage1_real[14];
+                        mul_buf[7] <= stage1_real[13] - stage1_real[15];
+                        //stage2 (b-d) buffer
+                        mul_buf[8] <= stage1_image[0] - stage1_image[2];  
+                        mul_buf[9] <= stage1_image[1] - stage1_image[3];  
+                        mul_buf[10] <= stage1_image[4] - stage1_image[6];  
+                        mul_buf[11] <= stage1_image[5] - stage1_image[7];  
+                        mul_buf[12] <= stage1_image[8] - stage1_image[10]; 
+                        mul_buf[13] <= stage1_image[9] - stage1_image[11];
+                        mul_buf[14] <= stage1_image[12] - stage1_image[14];
+                        mul_buf[15] <= stage1_image[13] - stage1_image[15];
+                    end
+                    4'd9: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage2 ffta real & image 
                         stage2_real[0] <= stage1_real[0] + stage1_real[2];
                         stage2_real[1] <= stage1_real[1] + stage1_real[3];
                         stage2_real[4] <= stage1_real[4] + stage1_real[6];
                         stage2_real[5] <= stage1_real[5] + stage1_real[7];   
-                        stage2_real[8] <= stage1_real[8] + stage1_real[10]; 
+                        stage2_real[8] <= stage1_real[8] + stage1_real[10];
                         stage2_real[9] <= stage1_real[9] + stage1_real[11];
                         stage2_real[12] <= stage1_real[12] + stage1_real[14];
                         stage2_real[13] <= stage1_real[13] + stage1_real[15];
 
-                        //stage2 (a-c) * real
-                        M0_mult1 <= stage1_real[0] - stage1_real[2];                             
-                        M1_mult1 <= stage1_real[1] - stage1_real[3];                
-                        M2_mult1 <= stage1_real[4] - stage1_real[6];                 
-                        M3_mult1 <= stage1_real[5] - stage1_real[7];                      
-                        M4_mult1 <= stage1_real[8] - stage1_real[10];              
-                        M5_mult1 <= stage1_real[9] - stage1_real[11];
-                        M6_mult1 <= stage1_real[12] - stage1_real[14];
-                        M7_mult1 <= stage1_real[13] - stage1_real[15];
+                        stage2_image[0] <= stage1_image[0] + stage1_image[2];
+                        stage2_image[1] <= stage1_image[1] + stage1_image[3];
+                        stage2_image[4] <= stage1_image[4] + stage1_image[6];     
+                        stage2_image[5] <= stage1_image[5] + stage1_image[7];
+                        stage2_image[8] <= stage1_image[8] + stage1_image[10];    
+                        stage2_image[9] <= stage1_image[9] + stage1_image[11];    
+                        stage2_image[12] <= stage1_image[12] + stage1_image[14];
+                        stage2_image[13] <= stage1_image[13] + stage1_image[15];
+
+                        //stage2 fftb real mul
+                        //stage2 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w4_real;
                         M2_mult2 <= w0_real;
@@ -391,29 +538,48 @@ always@(posedge clk) begin
                         M5_mult2 <= w4_real;
                         M6_mult2 <= w0_real;
                         M7_mult2 <= w4_real;
+
+                        //stage2 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w4_image;
+                        M10_mult2 <= w0_image;
+                        M11_mult2 <= w4_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w4_image;
+                        M14_mult2 <= w0_image;
+                        M15_mult2 <= w4_image;
                     end
-                    4'd7: begin
+                    4'd10: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage2_real[2] <= M0[47:16];
-                        stage2_real[3] <= M1[47:16];
-                        stage2_real[6] <= M2[47:16];
-                        stage2_real[7] <= M3[47:16];
-                        stage2_real[10] <= M4[47:16];
-                        stage2_real[11] <= M5[47:16];
-                        stage2_real[14] <= M6[47:16];
-                        stage2_real[15] <= M7[47:16];
+                        //stage2 fftb real get value
+                        stage2_real[2] <= M0[47:16] + M8[47:16];
+                        stage2_real[3] <= M1[47:16] + M9[47:16];
+                        stage2_real[6] <= M2[47:16] + M10[47:16];
+                        stage2_real[7] <= M3[47:16] + M11[47:16];
+                        stage2_real[10] <= M4[47:16] + M12[47:16];
+                        stage2_real[11] <= M5[47:16] + M13[47:16];
+                        stage2_real[14] <= M6[47:16] + M14[47:16];
+                        stage2_real[15] <= M7[47:16] + M15[47:16];
 
-                        stage2_image[0] <= stage1_image[0] + stage1_image[2];
-                        stage2_image[1] <= stage1_image[1] + stage1_image[3];
-                        stage2_image[4] <= stage1_image[4] + stage1_image[6];
-                        stage2_image[5] <= stage1_image[5] + stage1_image[7];   
-                        stage2_image[8] <= stage1_image[8] + stage1_image[10]; 
-                        stage2_image[9] <= stage1_image[9] + stage1_image[11];
-                        stage2_image[12] <= stage1_image[12] + stage1_image[14];
-                        stage2_image[13] <= stage1_image[13] + stage1_image[15];
-
+                        //stage2 fftb image mul
                         //stage2 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w4_image;
                         M2_mult2 <= w0_image;
@@ -422,83 +588,93 @@ always@(posedge clk) begin
                         M5_mult2 <= w4_image;
                         M6_mult2 <= w0_image;
                         M7_mult2 <= w4_image;
+
+                        //stage2 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w4_real;
+                        M10_mult2 <= w0_real;
+                        M11_mult2 <= w4_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w4_real;
+                        M14_mult2 <= w0_real;
+                        M15_mult2 <= w4_real;
                     end
-                    4'd8: begin
+                    4'd11: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage2_image[2] <= M0[47:16];
-                        stage2_image[3] <= M1[47:16];
-                        stage2_image[6] <= M2[47:16];
-                        stage2_image[7] <= M3[47:16];
-                        stage2_image[10] <= M4[47:16];
-                        stage2_image[11] <= M5[47:16];
-                        stage2_image[14] <= M6[47:16];
-                        stage2_image[15] <= M7[47:16];
-
-                        //stage2 (d-b) * image
-                        M0_mult1 <= stage1_image[2] - stage1_image[0];                             
-                        M1_mult1 <= stage1_image[3] - stage1_image[1];                
-                        M2_mult1 <= stage1_image[6] - stage1_image[4];                 
-                        M3_mult1 <= stage1_image[7] - stage1_image[5];                      
-                        M4_mult1 <= stage1_image[10] - stage1_image[8];              
-                        M5_mult1 <= stage1_image[11] - stage1_image[9];
-                        M6_mult1 <= stage1_image[14] - stage1_image[12];
-                        M7_mult1 <= stage1_image[15] - stage1_image[13];
-                    end
-                    4'd9: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage2_real[2] <= stage2_real[2] + M0[47:16];
-                        stage2_real[3] <= stage2_real[3] + M1[47:16];
-                        stage2_real[6] <= stage2_real[6] + M2[47:16];
-                        stage2_real[7] <= stage2_real[7] + M3[47:16];
-                        stage2_real[10] <= stage2_real[10] + M4[47:16];
-                        stage2_real[11] <= stage2_real[11] + M5[47:16];
-                        stage2_real[14] <= stage2_real[14] + M6[47:16];
-                        stage2_real[15] <= stage2_real[15] + M7[47:16];
-
-                        //stage2 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w4_real;
-                        M2_mult2 <= w0_real;
-                        M3_mult2 <= w4_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w4_real;
-                        M6_mult2 <= w0_real;
-                        M7_mult2 <= w4_real;
-                    end
-                    4'd10: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage2_image[2] <= stage2_image[2] - M0[47:16];
-                        stage2_image[3] <= stage2_image[3] - M1[47:16];
-                        stage2_image[6] <= stage2_image[6] - M2[47:16];
-                        stage2_image[7] <= stage2_image[7] - M3[47:16];
-                        stage2_image[10] <= stage2_image[10] - M4[47:16];
-                        stage2_image[11] <= stage2_image[11] - M5[47:16];
-                        stage2_image[14] <= stage2_image[14] - M6[47:16];
-                        stage2_image[15] <= stage2_image[15] - M7[47:16];
+                        stage2_image[2] <= M0[47:16] + M8[47:16];
+                        stage2_image[3] <= M1[47:16] + M9[47:16];
+                        stage2_image[6] <= M2[47:16] + M10[47:16];
+                        stage2_image[7] <= M3[47:16] + M11[47:16];
+                        stage2_image[10] <= M4[47:16] + M12[47:16];
+                        stage2_image[11] <= M5[47:16] + M13[47:16];
+                        stage2_image[14] <= M6[47:16] + M14[47:16];
+                        stage2_image[15] <= M7[47:16] + M15[47:16];
                         //stage2 finish
+                    end
+                    4'd12: begin
+                        input_fir[read_count] <= fir_d;
 
-                        //stage3
+                        //stage3 
+                        //stage3 (a-c) buffer
+                        mul_buf[0] <= stage2_real[0] - stage2_real[1];  
+                        mul_buf[1] <= stage2_real[2] - stage2_real[3];  
+                        mul_buf[2] <= stage2_real[4] - stage2_real[5];  
+                        mul_buf[3] <= stage2_real[6] - stage2_real[7];  
+                        mul_buf[4] <= stage2_real[8] - stage2_real[9]; 
+                        mul_buf[5] <= stage2_real[10] - stage2_real[11];
+                        mul_buf[6] <= stage2_real[12] - stage2_real[13];
+                        mul_buf[7] <= stage2_real[14] - stage2_real[15];
+                        //stage3 (b-d) buffer
+                        mul_buf[8] <= stage2_image[0] - stage2_image[1];  
+                        mul_buf[9] <= stage2_image[2] - stage2_image[3];  
+                        mul_buf[10] <= stage2_image[4] - stage2_image[5];  
+                        mul_buf[11] <= stage2_image[6] - stage2_image[7];  
+                        mul_buf[12] <= stage2_image[8] - stage2_image[9]; 
+                        mul_buf[13] <= stage2_image[10]- stage2_image[11];
+                        mul_buf[14] <= stage2_image[12] - stage2_image[13];
+                        mul_buf[15] <= stage2_image[14] - stage2_image[15];
+                    end
+                    4'd13: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage3 ffta real & image 
                         stage3_real[0] <= stage2_real[0] + stage2_real[1];
                         stage3_real[2] <= stage2_real[2] + stage2_real[3];
                         stage3_real[4] <= stage2_real[4] + stage2_real[5];
                         stage3_real[6] <= stage2_real[6] + stage2_real[7];   
-                        stage3_real[8] <= stage2_real[8] + stage2_real[9]; 
+                        stage3_real[8] <= stage2_real[8] + stage2_real[9];
                         stage3_real[10] <= stage2_real[10] + stage2_real[11];
                         stage3_real[12] <= stage2_real[12] + stage2_real[13];
                         stage3_real[14] <= stage2_real[14] + stage2_real[15];
 
-                        //stage3 (a-c) * real
-                        M0_mult1 <= stage2_real[0] - stage2_real[1];                             
-                        M1_mult1 <= stage2_real[2] - stage2_real[3];                
-                        M2_mult1 <= stage2_real[4] - stage2_real[5];                 
-                        M3_mult1 <= stage2_real[6] - stage2_real[7];                      
-                        M4_mult1 <= stage2_real[8] - stage2_real[9];              
-                        M5_mult1 <= stage2_real[10] - stage2_real[11];
-                        M6_mult1 <= stage2_real[12] - stage2_real[13];
-                        M7_mult1 <= stage2_real[14] - stage2_real[15];
+                        stage3_image[0] <= stage2_image[0] + stage2_image[1];
+                        stage3_image[2] <= stage2_image[2] + stage2_image[3];
+                        stage3_image[4] <= stage2_image[4] + stage2_image[5];     
+                        stage3_image[6] <= stage2_image[6] + stage2_image[7];
+                        stage3_image[8] <= stage2_image[8] + stage2_image[9];    
+                        stage3_image[10] <= stage2_image[10] + stage2_image[11];    
+                        stage3_image[12] <= stage2_image[12] + stage2_image[13];
+                        stage3_image[14] <= stage2_image[14] + stage2_image[15];
+
+                        //stage3 fftb real mul
+                        //stage3 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w0_real;
                         M2_mult2 <= w0_real;
@@ -507,29 +683,48 @@ always@(posedge clk) begin
                         M5_mult2 <= w0_real;
                         M6_mult2 <= w0_real;
                         M7_mult2 <= w0_real;
+
+                        //stage3 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w0_image;
+                        M10_mult2 <= w0_image;
+                        M11_mult2 <= w0_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w0_image;
+                        M14_mult2 <= w0_image;
+                        M15_mult2 <= w0_image;
                     end
-                    4'd11: begin
+                    4'd14: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage3_real[1] <= M0[47:16];
-                        stage3_real[3] <= M1[47:16];
-                        stage3_real[5] <= M2[47:16];
-                        stage3_real[7] <= M3[47:16];
-                        stage3_real[9] <= M4[47:16];
-                        stage3_real[11] <= M5[47:16];
-                        stage3_real[13] <= M6[47:16];
-                        stage3_real[15] <= M7[47:16];
+                        //stage3 fftb real get value
+                        stage3_real[1] <= M0[47:16] + M8[47:16];
+                        stage3_real[3] <= M1[47:16] + M9[47:16];
+                        stage3_real[5] <= M2[47:16] + M10[47:16];
+                        stage3_real[7] <= M3[47:16] + M11[47:16];
+                        stage3_real[9] <= M4[47:16] + M12[47:16];
+                        stage3_real[11] <= M5[47:16] + M13[47:16];
+                        stage3_real[13] <= M6[47:16] + M14[47:16];
+                        stage3_real[15] <= M7[47:16] + M15[47:16];
 
-                        stage3_image[0] <= stage2_image[0] + stage2_image[1];
-                        stage3_image[2] <= stage2_image[2] + stage2_image[3];
-                        stage3_image[4] <= stage2_image[4] + stage2_image[5];
-                        stage3_image[6] <= stage2_image[6] + stage2_image[7];  
-                        stage3_image[8] <= stage2_image[8] + stage2_image[9]; 
-                        stage3_image[10] <= stage2_image[10]+ stage2_image[11];
-                        stage3_image[12] <= stage2_image[12] + stage2_image[13];
-                        stage3_image[14] <= stage2_image[14] + stage2_image[15];
-
+                        //stage3 fftb image mul
                         //stage3 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w0_image;
                         M2_mult2 <= w0_image;
@@ -538,86 +733,38 @@ always@(posedge clk) begin
                         M5_mult2 <= w0_image;
                         M6_mult2 <= w0_image;
                         M7_mult2 <= w0_image;
-                    end
-                    4'd12: begin
-                        input_fir[read_count] <= fir_d;
 
-                        stage3_image[1] <= M0[47:16];
-                        stage3_image[3] <= M1[47:16];
-                        stage3_image[5] <= M2[47:16];
-                        stage3_image[7] <= M3[47:16];
-                        stage3_image[9] <= M4[47:16];
-                        stage3_image[11] <= M5[47:16];
-                        stage3_image[13] <= M6[47:16];
-                        stage3_image[15] <= M7[47:16];
-                        
-                        //stage3 (d-b) * image
-                        M0_mult1 <= stage1_image[1] - stage1_image[0];                             
-                        M1_mult1 <= stage1_image[3] - stage1_image[2];                
-                        M2_mult1 <= stage1_image[5] - stage1_image[4];                 
-                        M3_mult1 <= stage1_image[7] - stage1_image[6];                      
-                        M4_mult1 <= stage1_image[9] - stage1_image[8];              
-                        M5_mult1 <= stage1_image[11] - stage1_image[10];
-                        M6_mult1 <= stage1_image[13] - stage1_image[12];
-                        M7_mult1 <= stage1_image[15] - stage1_image[14];
-                    end
-                    4'd13: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage3_image[1] <= M0[47:16];
-                        stage3_image[3] <= M1[47:16];
-                        stage3_image[5] <= M2[47:16];
-                        stage3_image[7] <= M3[47:16];
-                        stage3_image[9] <= M4[47:16];
-                        stage3_image[11] <= M5[47:16];
-                        stage3_image[13] <= M6[47:16];
-                        stage3_image[15] <= M7[47:16];
-
-                        //stage2 (d-b) * image
-                        M0_mult1 <= stage2_image[1] - stage2_image[0];                             
-                        M1_mult1 <= stage2_image[3] - stage2_image[2];                
-                        M2_mult1 <= stage2_image[5] - stage2_image[4];                 
-                        M3_mult1 <= stage2_image[7] - stage2_image[6];                      
-                        M4_mult1 <= stage2_image[9] - stage2_image[8];              
-                        M5_mult1 <= stage2_image[11] - stage2_image[10];
-                        M6_mult1 <= stage2_image[13] - stage2_image[12];
-                        M7_mult1 <= stage2_image[15] - stage2_image[14];
-                    end
-                    4'd14: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage3_real[1] <= stage3_real[1] + M0[47:16];
-                        stage3_real[3] <= stage3_real[3] + M1[47:16];
-                        stage3_real[5] <= stage3_real[5] + M2[47:16];
-                        stage3_real[7] <= stage3_real[7] + M3[47:16];
-                        stage3_real[9] <= stage3_real[9] + M4[47:16];
-                        stage3_real[11] <= stage3_real[11] + M5[47:16];
-                        stage3_real[13] <= stage3_real[13] + M6[47:16];
-                        stage3_real[15] <= stage3_real[15] + M7[47:16];
-
-                        //stage3 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w0_real;
-                        M2_mult2 <= w0_real;
-                        M3_mult2 <= w0_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w0_real;
-                        M6_mult2 <= w0_real;
-                        M7_mult2 <= w0_real;
+                        //stage3 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w0_real;
+                        M10_mult2 <= w0_real;
+                        M11_mult2 <= w0_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w0_real;
+                        M14_mult2 <= w0_real;
+                        M15_mult2 <= w0_real;
                         
                     end
                     4'd15: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage3_image[1] <= stage3_image[1] - M0[47:16];
-                        stage3_image[3] <= stage3_image[3] - M1[47:16];
-                        stage3_image[5] <= stage3_image[5] - M2[47:16];
-                        stage3_image[7] <= stage3_image[7] - M3[47:16];
-                        stage3_image[9] <= stage3_image[9] - M4[47:16];
-                        stage3_image[11] <= stage3_image[11] - M5[47:16];
-                        stage3_image[13] <= stage3_image[13] - M6[47:16];
-                        stage3_image[15] <= stage3_image[15] - M7[47:16];
-                        //stage 3 finish
+                        stage3_image[1] <= M0[47:16] + M8[47:16];
+                        stage3_image[3] <= M1[47:16] + M9[47:16];
+                        stage3_image[5] <= M2[47:16] + M10[47:16];
+                        stage3_image[7] <= M3[47:16] + M11[47:16];
+                        stage3_image[9] <= M4[47:16] + M12[47:16];
+                        stage3_image[11] <= M5[47:16] + M13[47:16];
+                        stage3_image[13] <= M6[47:16] + M14[47:16];
+                        stage3_image[15] <= M7[47:16] + M15[47:16];
+                        //stage3 finish
 
                         
                     end
@@ -648,24 +795,6 @@ always@(posedge clk) begin
                         proceed_fir[14] <= input_fir[14];
                         proceed_fir[15] <= input_fir[15];
 
-                        //stage0 (a-c) * real
-                        M0_mult1 <= {{8{input_fir[0][15]}}, input_fir[0], 8'd0} - {{8{input_fir[8][15]}}, input_fir[8], 8'd0};                                    
-                        M1_mult1 <= {{8{input_fir[1][15]}}, input_fir[1], 8'd0} - {{8{input_fir[9][15]}}, input_fir[9], 8'd0};                       
-                        M2_mult1 <= {{8{input_fir[2][15]}}, input_fir[2], 8'd0} - {{8{input_fir[10][15]}}, input_fir[10], 8'd0};                      
-                        M3_mult1 <= {{8{input_fir[3][15]}}, input_fir[3], 8'd0} - {{8{input_fir[11][15]}}, input_fir[11], 8'd0};                        
-                        M4_mult1 <= {{8{input_fir[4][15]}}, input_fir[4], 8'd0} - {{8{input_fir[12][15]}}, input_fir[12], 8'd0};                  
-                        M5_mult1 <= {{8{input_fir[5][15]}}, input_fir[5], 8'd0} - {{8{input_fir[13][15]}}, input_fir[13], 8'd0};
-                        M6_mult1 <= {{8{input_fir[6][15]}}, input_fir[6], 8'd0} - {{8{input_fir[14][15]}}, input_fir[14], 8'd0};
-                        M7_mult1 <= {{8{input_fir[7][15]}}, input_fir[7], 8'd0} - {{8{input_fir[15][15]}}, input_fir[15], 8'd0};
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w1_real;
-                        M2_mult2 <= w2_real;
-                        M3_mult2 <= w3_real;
-                        M4_mult2 <= w4_real;
-                        M5_mult2 <= w5_real;
-                        M6_mult2 <= w6_real;
-                        M7_mult2 <= w7_real;
-
                         //trans
                         fft_valid <= 1'b1;
                         fft_d0  <= stage3_real[0][23:8];
@@ -685,55 +814,31 @@ always@(posedge clk) begin
                         fft_d14 <= stage3_real[7][23:8];
                         fft_d15 <= stage3_real[15][23:8];
 
+                        //stage0 (a-c) buffer
+                        mul_buf[0] <= {{8{input_fir[0][15]}}, input_fir[0], 8'd0} - {{8{input_fir[8][15]}}, input_fir[8], 8'd0};
+                        mul_buf[1] <= {{8{input_fir[1][15]}}, input_fir[1], 8'd0} - {{8{input_fir[9][15]}}, input_fir[9], 8'd0};
+                        mul_buf[2] <= {{8{input_fir[2][15]}}, input_fir[2], 8'd0} - {{8{input_fir[10][15]}}, input_fir[10], 8'd0};
+                        mul_buf[3] <= {{8{input_fir[3][15]}}, input_fir[3], 8'd0} - {{8{input_fir[11][15]}}, input_fir[11], 8'd0};
+                        mul_buf[4] <= {{8{input_fir[4][15]}}, input_fir[4], 8'd0} - {{8{input_fir[12][15]}}, input_fir[12], 8'd0};
+                        mul_buf[5] <= {{8{input_fir[5][15]}}, input_fir[5], 8'd0} - {{8{input_fir[13][15]}}, input_fir[13], 8'd0};
+                        mul_buf[6] <= {{8{input_fir[6][15]}}, input_fir[6], 8'd0} - {{8{input_fir[14][15]}}, input_fir[14], 8'd0};
+                        mul_buf[7] <= {{8{input_fir[7][15]}}, input_fir[7], 8'd0} - {{8{input_fir[15][15]}}, input_fir[15], 8'd0};
+                        //stage0 (b-d) buffer
+                        mul_buf[8] <= 32'd0;
+                        mul_buf[9] <= 32'd0;
+                        mul_buf[10] <= 32'd0;
+                        mul_buf[11] <= 32'd0;
+                        mul_buf[12] <= 32'd0;
+                        mul_buf[13] <= 32'd0;
+                        mul_buf[14] <= 32'd0;
+                        mul_buf[15] <= 32'd0;
+
                     end
                     //stage0 
                     4'd1: begin
                         input_fir[read_count] <= fir_d;
-                        stage0_real[0] <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} + {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};
-                        stage0_real[1] <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} + {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};
-                        stage0_real[2] <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} + {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
-                        stage0_real[3] <= {{8{proceed_fir[3][15]}}, proceed_fir[3], 8'd0} + {{8{proceed_fir[11][15]}}, proceed_fir[11], 8'd0};
-                        stage0_real[4] <= {{8{proceed_fir[4][15]}}, proceed_fir[4], 8'd0} + {{8{proceed_fir[12][15]}}, proceed_fir[12], 8'd0};
-                        stage0_real[5] <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} + {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
-                        stage0_real[6] <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} + {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
-                        stage0_real[7] <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} + {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
-                                                
-                        stage0_real[8] <= M0[47:16];
-                        stage0_real[9] <= M1[47:16];
-                        stage0_real[10] <= M2[47:16];
-                        stage0_real[11] <= M3[47:16];
-                        stage0_real[12] <= M4[47:16];
-                        stage0_real[13] <= M5[47:16];
-                        stage0_real[14] <= M6[47:16];
-                        stage0_real[15] <= M7[47:16];
-
-                        stage0_image[0] <= 32'd0;
-                        stage0_image[1] <= 32'd0;
-                        stage0_image[2] <= 32'd0;
-                        stage0_image[3] <= 32'd0;
-                        stage0_image[4] <= 32'd0;
-                        stage0_image[5] <= 32'd0;
-                        stage0_image[6] <= 32'd0;
-                        stage0_image[7] <= 32'd0;
-
-                        //stage0 (a-c) * image
-                        M0_mult1 <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} - {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};  
-                        M1_mult1 <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} - {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};  
-                        M2_mult1 <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} - {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
-                        M3_mult1 <= {{8{proceed_fir[3][15]}}, proceed_fir[3], 8'd0} - {{8{proceed_fir[11][15]}}, proceed_fir[11], 8'd0};
-                        M4_mult1 <= {{8{proceed_fir[4][15]}}, proceed_fir[4], 8'd0} - {{8{proceed_fir[12][15]}}, proceed_fir[12], 8'd0};
-                        M5_mult1 <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} - {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
-                        M6_mult1 <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} - {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
-                        M7_mult1 <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} - {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
-                        M0_mult2 <= w0_image;
-                        M1_mult2 <= w1_image;
-                        M2_mult2 <= w2_image;
-                        M3_mult2 <= w3_image;
-                        M4_mult2 <= w4_image;
-                        M5_mult2 <= w5_image;
-                        M6_mult2 <= w6_image;
-                        M7_mult2 <= w7_image;
-
+                        
+                        //trans
                         fft_d0 <= stage3_image[0][23:8];
                         fft_d1 <= stage3_image[8][23:8];
                         fft_d2 <= stage3_image[4][23:8];
@@ -750,22 +855,161 @@ always@(posedge clk) begin
                         fft_d13 <= stage3_image[11][23:8];
                         fft_d14 <= stage3_image[7][23:8];
                         fft_d15 <= stage3_image[15][23:8];
+
+                        //stage0 ffta real & image
+                        stage0_real[0] <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} + {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};
+                        stage0_real[1] <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} + {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};
+                        stage0_real[2] <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} + {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
+                        stage0_real[3] <= {{8{proceed_fir[3][15]}}, proceed_fir[3], 8'd0} + {{8{proceed_fir[11][15]}}, proceed_fir[11], 8'd0};
+                        stage0_real[4] <= {{8{proceed_fir[4][15]}}, proceed_fir[4], 8'd0} + {{8{proceed_fir[12][15]}}, proceed_fir[12], 8'd0};
+                        stage0_real[5] <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} + {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
+                        stage0_real[6] <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} + {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
+                        stage0_real[7] <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} + {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
+
+                        stage0_image[0] <= 32'd0;
+                        stage0_image[1] <= 32'd0;
+                        stage0_image[2] <= 32'd0;
+                        stage0_image[3] <= 32'd0;
+                        stage0_image[4] <= 32'd0;
+                        stage0_image[5] <= 32'd0;
+                        stage0_image[6] <= 32'd0;
+                        stage0_image[7] <= 32'd0;
+
+                        //stage0 fftb real mul
+                        //stage0 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
+                        M0_mult2 <= w0_real;
+                        M1_mult2 <= w1_real;
+                        M2_mult2 <= w2_real;
+                        M3_mult2 <= w3_real;
+                        M4_mult2 <= w4_real;
+                        M5_mult2 <= w5_real;
+                        M6_mult2 <= w6_real;
+                        M7_mult2 <= w7_real;
+
+                        //stage0 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w1_image;
+                        M10_mult2 <= w2_image;
+                        M11_mult2 <= w3_image;
+                        M12_mult2 <= w4_image;
+                        M13_mult2 <= w5_image;
+                        M14_mult2 <= w6_image;
+                        M15_mult2 <= w7_image;
+                        
                     end
                     4'd2: begin
-                        fft_valid <= 0;
                         input_fir[read_count] <= fir_d;
                         
-                        stage0_image[8]  <= M0[47:16];
-                        stage0_image[9]  <= M1[47:16];
-                        stage0_image[10] <= M2[47:16];
-                        stage0_image[11] <= M3[47:16];
-                        stage0_image[12] <= M4[47:16];
-                        stage0_image[13] <= M5[47:16];
-                        stage0_image[14] <= M6[47:16];
-                        stage0_image[15] <= M7[47:16];
-                        //stage 0 finish
+                        //trans end
+                        fft_valid <= 0;
 
-                        //stage 1 
+                        //stage 0 fftb real get value
+                        stage0_real[8] <= M0[47:16] + M8[47:16];
+                        stage0_real[9] <= M1[47:16] + M9[47:16];
+                        stage0_real[10] <= M2[47:16] + M10[47:16];
+                        stage0_real[11] <= M3[47:16] + M11[47:16];
+                        stage0_real[12] <= M4[47:16] + M12[47:16];
+                        stage0_real[13] <= M5[47:16] + M13[47:16];
+                        stage0_real[14] <= M6[47:16] + M14[47:16];
+                        stage0_real[15] <= M7[47:16] + M15[47:16];
+
+                        //stage0 fftb image mul
+                        //stage0 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
+                        M0_mult2 <= w0_image;
+                        M1_mult2 <= w1_image;
+                        M2_mult2 <= w2_image;
+                        M3_mult2 <= w3_image;
+                        M4_mult2 <= w4_image;
+                        M5_mult2 <= w5_image;
+                        M6_mult2 <= w6_image;
+                        M7_mult2 <= w7_image;
+
+                        //stage0 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w1_real;
+                        M10_mult2 <= w2_real;
+                        M11_mult2 <= w3_real;
+                        M12_mult2 <= w4_real;
+                        M13_mult2 <= w5_real;
+                        M14_mult2 <= w6_real;
+                        M15_mult2 <= w7_real;
+
+                                                                                                                                                                                                                                                                                                          
+                    end
+                    4'd3: begin
+                        input_fir[read_count] <= fir_d;
+                        
+                        stage0_image[8] <= M0[47:16] + M8[47:16];
+                        stage0_image[9] <= M1[47:16] + M9[47:16];
+                        stage0_image[10] <= M2[47:16] + M10[47:16];
+                        stage0_image[11] <= M3[47:16] + M11[47:16];
+                        stage0_image[12] <= M4[47:16] + M12[47:16];
+                        stage0_image[13] <= M5[47:16] + M13[47:16];
+                        stage0_image[14] <= M6[47:16] + M14[47:16];
+                        stage0_image[15] <= M7[47:16] + M15[47:16];
+                        //stage0 finish
+
+                    end
+                    4'd4: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage1 
+                        //stage1 (a-c) buffer
+                        mul_buf[0] <= stage0_real[0] - stage0_real[4];  
+                        mul_buf[1] <= stage0_real[1] - stage0_real[5];  
+                        mul_buf[2] <= stage0_real[2] - stage0_real[6];  
+                        mul_buf[3] <= stage0_real[3] - stage0_real[7];  
+                        mul_buf[4] <= stage0_real[8] - stage0_real[12]; 
+                        mul_buf[5] <= stage0_real[9] - stage0_real[13];
+                        mul_buf[6] <= stage0_real[10] - stage0_real[14];
+                        mul_buf[7] <= stage0_real[11] - stage0_real[15];
+                        //stage1 (b-d) buffer
+                        mul_buf[8] <= stage0_image[0] - stage0_image[4];  
+                        mul_buf[9] <= stage0_image[1] - stage0_image[5];  
+                        mul_buf[10] <= stage0_image[2] - stage0_image[6];  
+                        mul_buf[11] <= stage0_image[3] - stage0_image[7];  
+                        mul_buf[12] <= stage0_image[8] - stage0_image[12]; 
+                        mul_buf[13] <= stage0_image[9] - stage0_image[13];
+                        mul_buf[14] <= stage0_image[10] - stage0_image[14];
+                        mul_buf[15] <= stage0_image[11] - stage0_image[15];
+                   
+                    end
+                    4'd5: begin
+                        input_fir[read_count] <= fir_d;
+                        
+                        //stage1 ffta real & image 
                         stage1_real[0] <= stage0_real[0] + stage0_real[4];
                         stage1_real[1] <= stage0_real[1] + stage0_real[5];
                         stage1_real[2] <= stage0_real[2] + stage0_real[6];
@@ -775,15 +1019,25 @@ always@(posedge clk) begin
                         stage1_real[10] <= stage0_real[10] + stage0_real[14];
                         stage1_real[11] <= stage0_real[11] + stage0_real[15];
 
-                        // stage 1 (a-c) * real
-                        M0_mult1 <= stage0_real[0] - stage0_real[4];                                  
-                        M1_mult1 <= stage0_real[1] - stage0_real[5];                     
-                        M2_mult1 <= stage0_real[2] - stage0_real[6];                      
-                        M3_mult1 <= stage0_real[3] - stage0_real[7];                        
-                        M4_mult1 <= stage0_real[8] - stage0_real[12];                  
-                        M5_mult1 <= stage0_real[9] - stage0_real[13];
-                        M6_mult1 <= stage0_real[10] - stage0_real[14];
-                        M7_mult1 <= stage0_real[11] - stage0_real[15];
+                        stage1_image[0] <= stage0_image[0] + stage0_image[4];
+                        stage1_image[1] <= stage0_image[1] + stage0_image[5];
+                        stage1_image[2] <= stage0_image[2] + stage0_image[6];     
+                        stage1_image[3] <= stage0_image[3] + stage0_image[7];
+                        stage1_image[8] <= stage0_image[8] + stage0_image[12];    
+                        stage1_image[9] <= stage0_image[9] + stage0_image[13];    
+                        stage1_image[10] <= stage0_image[10] + stage0_image[14];
+                        stage1_image[11] <= stage0_image[11] + stage0_image[15];
+
+                        //stage1 fftb real mul
+                        //stage1 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w2_real;
                         M2_mult2 <= w4_real;
@@ -792,30 +1046,49 @@ always@(posedge clk) begin
                         M5_mult2 <= w2_real;
                         M6_mult2 <= w4_real;
                         M7_mult2 <= w6_real;
-                                                                                                                                                                                                                                                                                                          
+
+                        //stage1 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w2_image;
+                        M10_mult2 <= w4_image;
+                        M11_mult2 <= w6_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w2_image;
+                        M14_mult2 <= w4_image;
+                        M15_mult2 <= w6_image;
+
                     end
-                    4'd3: begin
+                    4'd6: begin
                         input_fir[read_count] <= fir_d;
-                        
-                        stage1_real[4] <= M0[47:16];
-                        stage1_real[5] <= M1[47:16];
-                        stage1_real[6] <= M2[47:16];
-                        stage1_real[7] <= M3[47:16];
-                        stage1_real[12] <= M4[47:16];
-                        stage1_real[13] <= M5[47:16];
-                        stage1_real[14] <= M6[47:16];
-                        stage1_real[15] <= M7[47:16];
 
-                        stage1_image[0] <= stage0_image[0] + stage0_image[4];
-                        stage1_image[1] <= stage0_image[1] + stage0_image[5];
-                        stage1_image[2] <= stage0_image[2] + stage0_image[6];                
-                        stage1_image[3] <= stage0_image[3] + stage0_image[7];
-                        stage1_image[8] <= stage0_image[8] + stage0_image[12];                       
-                        stage1_image[9] <= stage0_image[9] + stage0_image[13];                      
-                        stage1_image[10] <= stage0_image[10] + stage0_image[14];
-                        stage1_image[11] <= stage0_image[11] + stage0_image[15];
+                        //stage1 fftb real get value
+                        stage1_real[4] <= M0[47:16] + M8[47:16];
+                        stage1_real[5] <= M1[47:16] + M9[47:16];
+                        stage1_real[6] <= M2[47:16] + M10[47:16];
+                        stage1_real[7] <= M3[47:16] + M11[47:16];
+                        stage1_real[12] <= M4[47:16] + M12[47:16];
+                        stage1_real[13] <= M5[47:16] + M13[47:16];
+                        stage1_real[14] <= M6[47:16] + M14[47:16];
+                        stage1_real[15] <= M7[47:16] + M15[47:16];
 
-                        //stage 1 (a-c) * image
+                        //stage1 fftb image mul
+                        //stage1 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w2_image;
                         M2_mult2 <= w4_image;
@@ -825,84 +1098,94 @@ always@(posedge clk) begin
                         M6_mult2 <= w4_image;
                         M7_mult2 <= w6_image;
 
-                    end
-                    4'd4: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage1_image[4] <= M0[47:16];
-                        stage1_image[5] <= M1[47:16];
-                        stage1_image[6] <= M2[47:16];
-                        stage1_image[7] <= M3[47:16];
-                        stage1_image[12] <= M4[47:16];
-                        stage1_image[13] <= M5[47:16];
-                        stage1_image[14] <= M6[47:16];
-                        stage1_image[15] <= M7[47:16];
-
-                        //stage 1 (d-b) * image
-                        M0_mult1 <= stage0_image[4] - stage0_image[0];    
-                        M1_mult1 <= stage0_image[5] - stage0_image[1];    
-                        M2_mult1 <= stage0_image[6] - stage0_image[2];    
-                        M3_mult1 <= stage0_image[7] - stage0_image[3];    
-                        M4_mult1 <= stage0_image[12] - stage0_image[8];   
-                        M5_mult1 <= stage0_image[13] - stage0_image[9];
-                        M6_mult1 <= stage0_image[14] - stage0_image[10];
-                        M7_mult1 <= stage0_image[15] - stage0_image[11];
-                   
-                    end
-                    4'd5: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage1_real[4] <=  stage1_real[4] + M0[47:16];
-                        stage1_real[5] <=  stage1_real[5] + M1[47:16];
-                        stage1_real[6] <=  stage1_real[6] + M2[47:16];
-                        stage1_real[7] <=  stage1_real[7] + M3[47:16];
-                        stage1_real[12] <= stage1_real[12] + M4[47:16];
-                        stage1_real[13] <= stage1_real[13] + M5[47:16];
-                        stage1_real[14] <= stage1_real[14] + M6[47:16];
-                        stage1_real[15] <= stage1_real[15] + M7[47:16];
-
-                        //stage 1 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w2_real;
-                        M2_mult2 <= w4_real;
-                        M3_mult2 <= w6_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w2_real;
-                        M6_mult2 <= w4_real;
-                        M7_mult2 <= w6_real;
-                    end
-                    4'd6: begin
-                        input_fir[read_count] <= fir_d;
+                        //stage1 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w2_real;
+                        M10_mult2 <= w4_real;
+                        M11_mult2 <= w6_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w2_real;
+                        M14_mult2 <= w4_real;
+                        M15_mult2 <= w6_real;
                         
-                        stage1_image[4] <= stage1_image[4] - M0[47:16];
-                        stage1_image[5] <= stage1_image[5] - M1[47:16];
-                        stage1_image[6] <= stage1_image[6] - M2[47:16];
-                        stage1_image[7] <= stage1_image[7] - M3[47:16];
-                        stage1_image[12] <= stage1_image[12] - M4[47:16];
-                        stage1_image[13] <= stage1_image[13] - M5[47:16];
-                        stage1_image[14] <= stage1_image[14] - M6[47:16];
-                        stage1_image[15] <= stage1_image[15] - M7[47:16];
+                    end
+                    4'd7: begin
+                        input_fir[read_count] <= fir_d;
+
+                        stage1_image[4] <= M0[47:16] + M8[47:16];
+                        stage1_image[5] <= M1[47:16] + M9[47:16];
+                        stage1_image[6] <= M2[47:16] + M10[47:16];
+                        stage1_image[7] <= M3[47:16] + M11[47:16];
+                        stage1_image[12] <= M4[47:16] + M12[47:16];
+                        stage1_image[13] <= M5[47:16] + M13[47:16];
+                        stage1_image[14] <= M6[47:16] + M14[47:16];
+                        stage1_image[15] <= M7[47:16] + M15[47:16];
                         //stage1 finish
 
-                        //stage2
+                    end
+                    4'd8: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage2 
+                        //stage2 (a-c) buffer
+                        mul_buf[0] <= stage1_real[0] - stage1_real[2];  
+                        mul_buf[1] <= stage1_real[1] - stage1_real[3];  
+                        mul_buf[2] <= stage1_real[4] - stage1_real[6];  
+                        mul_buf[3] <= stage1_real[5] - stage1_real[7];  
+                        mul_buf[4] <= stage1_real[8] - stage1_real[10]; 
+                        mul_buf[5] <= stage1_real[9] - stage1_real[11];
+                        mul_buf[6] <= stage1_real[12] - stage1_real[14];
+                        mul_buf[7] <= stage1_real[13] - stage1_real[15];
+                        //stage2 (b-d) buffer
+                        mul_buf[8] <= stage1_image[0] - stage1_image[2];  
+                        mul_buf[9] <= stage1_image[1] - stage1_image[3];  
+                        mul_buf[10] <= stage1_image[4] - stage1_image[6];  
+                        mul_buf[11] <= stage1_image[5] - stage1_image[7];  
+                        mul_buf[12] <= stage1_image[8] - stage1_image[10]; 
+                        mul_buf[13] <= stage1_image[9] - stage1_image[11];
+                        mul_buf[14] <= stage1_image[12] - stage1_image[14];
+                        mul_buf[15] <= stage1_image[13] - stage1_image[15];
+                    end
+                    4'd9: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage2 ffta real & image 
                         stage2_real[0] <= stage1_real[0] + stage1_real[2];
                         stage2_real[1] <= stage1_real[1] + stage1_real[3];
                         stage2_real[4] <= stage1_real[4] + stage1_real[6];
                         stage2_real[5] <= stage1_real[5] + stage1_real[7];   
-                        stage2_real[8] <= stage1_real[8] + stage1_real[10]; 
+                        stage2_real[8] <= stage1_real[8] + stage1_real[10];
                         stage2_real[9] <= stage1_real[9] + stage1_real[11];
                         stage2_real[12] <= stage1_real[12] + stage1_real[14];
                         stage2_real[13] <= stage1_real[13] + stage1_real[15];
 
-                        //stage2 (a-c) * real
-                        M0_mult1 <= stage1_real[0] - stage1_real[2];                             
-                        M1_mult1 <= stage1_real[1] - stage1_real[3];                
-                        M2_mult1 <= stage1_real[4] - stage1_real[6];                 
-                        M3_mult1 <= stage1_real[5] - stage1_real[7];                      
-                        M4_mult1 <= stage1_real[8] - stage1_real[10];              
-                        M5_mult1 <= stage1_real[9] - stage1_real[11];
-                        M6_mult1 <= stage1_real[12] - stage1_real[14];
-                        M7_mult1 <= stage1_real[13] - stage1_real[15];
+                        stage2_image[0] <= stage1_image[0] + stage1_image[2];
+                        stage2_image[1] <= stage1_image[1] + stage1_image[3];
+                        stage2_image[4] <= stage1_image[4] + stage1_image[6];     
+                        stage2_image[5] <= stage1_image[5] + stage1_image[7];
+                        stage2_image[8] <= stage1_image[8] + stage1_image[10];    
+                        stage2_image[9] <= stage1_image[9] + stage1_image[11];    
+                        stage2_image[12] <= stage1_image[12] + stage1_image[14];
+                        stage2_image[13] <= stage1_image[13] + stage1_image[15];
+
+                        //stage2 fftb real mul
+                        //stage2 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w4_real;
                         M2_mult2 <= w0_real;
@@ -911,29 +1194,48 @@ always@(posedge clk) begin
                         M5_mult2 <= w4_real;
                         M6_mult2 <= w0_real;
                         M7_mult2 <= w4_real;
+
+                        //stage2 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w4_image;
+                        M10_mult2 <= w0_image;
+                        M11_mult2 <= w4_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w4_image;
+                        M14_mult2 <= w0_image;
+                        M15_mult2 <= w4_image;
                     end
-                    4'd7: begin
+                    4'd10: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage2_real[2] <= M0[47:16];
-                        stage2_real[3] <= M1[47:16];
-                        stage2_real[6] <= M2[47:16];
-                        stage2_real[7] <= M3[47:16];
-                        stage2_real[10] <= M4[47:16];
-                        stage2_real[11] <= M5[47:16];
-                        stage2_real[14] <= M6[47:16];
-                        stage2_real[15] <= M7[47:16];
+                        //stage2 fftb real get value
+                        stage2_real[2] <= M0[47:16] + M8[47:16];
+                        stage2_real[3] <= M1[47:16] + M9[47:16];
+                        stage2_real[6] <= M2[47:16] + M10[47:16];
+                        stage2_real[7] <= M3[47:16] + M11[47:16];
+                        stage2_real[10] <= M4[47:16] + M12[47:16];
+                        stage2_real[11] <= M5[47:16] + M13[47:16];
+                        stage2_real[14] <= M6[47:16] + M14[47:16];
+                        stage2_real[15] <= M7[47:16] + M15[47:16];
 
-                        stage2_image[0] <= stage1_image[0] + stage1_image[2];
-                        stage2_image[1] <= stage1_image[1] + stage1_image[3];
-                        stage2_image[4] <= stage1_image[4] + stage1_image[6];
-                        stage2_image[5] <= stage1_image[5] + stage1_image[7];   
-                        stage2_image[8] <= stage1_image[8] + stage1_image[10]; 
-                        stage2_image[9] <= stage1_image[9] + stage1_image[11];
-                        stage2_image[12] <= stage1_image[12] + stage1_image[14];
-                        stage2_image[13] <= stage1_image[13] + stage1_image[15];
-
+                        //stage2 fftb image mul
                         //stage2 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w4_image;
                         M2_mult2 <= w0_image;
@@ -942,83 +1244,93 @@ always@(posedge clk) begin
                         M5_mult2 <= w4_image;
                         M6_mult2 <= w0_image;
                         M7_mult2 <= w4_image;
+
+                        //stage2 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w4_real;
+                        M10_mult2 <= w0_real;
+                        M11_mult2 <= w4_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w4_real;
+                        M14_mult2 <= w0_real;
+                        M15_mult2 <= w4_real;
                     end
-                    4'd8: begin
+                    4'd11: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage2_image[2] <= M0[47:16];
-                        stage2_image[3] <= M1[47:16];
-                        stage2_image[6] <= M2[47:16];
-                        stage2_image[7] <= M3[47:16];
-                        stage2_image[10] <= M4[47:16];
-                        stage2_image[11] <= M5[47:16];
-                        stage2_image[14] <= M6[47:16];
-                        stage2_image[15] <= M7[47:16];
-
-                        //stage2 (d-b) * image
-                        M0_mult1 <= stage1_image[2] - stage1_image[0];                             
-                        M1_mult1 <= stage1_image[3] - stage1_image[1];                
-                        M2_mult1 <= stage1_image[6] - stage1_image[4];                 
-                        M3_mult1 <= stage1_image[7] - stage1_image[5];                      
-                        M4_mult1 <= stage1_image[10] - stage1_image[8];              
-                        M5_mult1 <= stage1_image[11] - stage1_image[9];
-                        M6_mult1 <= stage1_image[14] - stage1_image[12];
-                        M7_mult1 <= stage1_image[15] - stage1_image[13];
-                    end
-                    4'd9: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage2_real[2] <= stage2_real[2] + M0[47:16];
-                        stage2_real[3] <= stage2_real[3] + M1[47:16];
-                        stage2_real[6] <= stage2_real[6] + M2[47:16];
-                        stage2_real[7] <= stage2_real[7] + M3[47:16];
-                        stage2_real[10] <= stage2_real[10] + M4[47:16];
-                        stage2_real[11] <= stage2_real[11] + M5[47:16];
-                        stage2_real[14] <= stage2_real[14] + M6[47:16];
-                        stage2_real[15] <= stage2_real[15] + M7[47:16];
-
-                        //stage2 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w4_real;
-                        M2_mult2 <= w0_real;
-                        M3_mult2 <= w4_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w4_real;
-                        M6_mult2 <= w0_real;
-                        M7_mult2 <= w4_real;
-                    end
-                    4'd10: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage2_image[2] <= stage2_image[2] - M0[47:16];
-                        stage2_image[3] <= stage2_image[3] - M1[47:16];
-                        stage2_image[6] <= stage2_image[6] - M2[47:16];
-                        stage2_image[7] <= stage2_image[7] - M3[47:16];
-                        stage2_image[10] <= stage2_image[10] - M4[47:16];
-                        stage2_image[11] <= stage2_image[11] - M5[47:16];
-                        stage2_image[14] <= stage2_image[14] - M6[47:16];
-                        stage2_image[15] <= stage2_image[15] - M7[47:16];
+                        stage2_image[2] <= M0[47:16] + M8[47:16];
+                        stage2_image[3] <= M1[47:16] + M9[47:16];
+                        stage2_image[6] <= M2[47:16] + M10[47:16];
+                        stage2_image[7] <= M3[47:16] + M11[47:16];
+                        stage2_image[10] <= M4[47:16] + M12[47:16];
+                        stage2_image[11] <= M5[47:16] + M13[47:16];
+                        stage2_image[14] <= M6[47:16] + M14[47:16];
+                        stage2_image[15] <= M7[47:16] + M15[47:16];
                         //stage2 finish
+                    end
+                    4'd12: begin
+                        input_fir[read_count] <= fir_d;
 
-                        //stage3
+                        //stage3 
+                        //stage3 (a-c) buffer
+                        mul_buf[0] <= stage2_real[0] - stage2_real[1];  
+                        mul_buf[1] <= stage2_real[2] - stage2_real[3];  
+                        mul_buf[2] <= stage2_real[4] - stage2_real[5];  
+                        mul_buf[3] <= stage2_real[6] - stage2_real[7];  
+                        mul_buf[4] <= stage2_real[8] - stage2_real[9]; 
+                        mul_buf[5] <= stage2_real[10] - stage2_real[11];
+                        mul_buf[6] <= stage2_real[12] - stage2_real[13];
+                        mul_buf[7] <= stage2_real[14] - stage2_real[15];
+                        //stage3 (b-d) buffer
+                        mul_buf[8] <= stage2_image[0] - stage2_image[1];  
+                        mul_buf[9] <= stage2_image[2] - stage2_image[3];  
+                        mul_buf[10] <= stage2_image[4] - stage2_image[5];  
+                        mul_buf[11] <= stage2_image[6] - stage2_image[7];  
+                        mul_buf[12] <= stage2_image[8] - stage2_image[9]; 
+                        mul_buf[13] <= stage2_image[10]- stage2_image[11];
+                        mul_buf[14] <= stage2_image[12] - stage2_image[13];
+                        mul_buf[15] <= stage2_image[14] - stage2_image[15];
+                    end
+                    4'd13: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage3 ffta real & image 
                         stage3_real[0] <= stage2_real[0] + stage2_real[1];
                         stage3_real[2] <= stage2_real[2] + stage2_real[3];
                         stage3_real[4] <= stage2_real[4] + stage2_real[5];
                         stage3_real[6] <= stage2_real[6] + stage2_real[7];   
-                        stage3_real[8] <= stage2_real[8] + stage2_real[9]; 
+                        stage3_real[8] <= stage2_real[8] + stage2_real[9];
                         stage3_real[10] <= stage2_real[10] + stage2_real[11];
                         stage3_real[12] <= stage2_real[12] + stage2_real[13];
                         stage3_real[14] <= stage2_real[14] + stage2_real[15];
 
-                        //stage3 (a-c) * real
-                        M0_mult1 <= stage2_real[0] - stage2_real[1];                             
-                        M1_mult1 <= stage2_real[2] - stage2_real[3];                
-                        M2_mult1 <= stage2_real[4] - stage2_real[5];                 
-                        M3_mult1 <= stage2_real[6] - stage2_real[7];                      
-                        M4_mult1 <= stage2_real[8] - stage2_real[9];              
-                        M5_mult1 <= stage2_real[10] - stage2_real[11];
-                        M6_mult1 <= stage2_real[12] - stage2_real[13];
-                        M7_mult1 <= stage2_real[14] - stage2_real[15];
+                        stage3_image[0] <= stage2_image[0] + stage2_image[1];
+                        stage3_image[2] <= stage2_image[2] + stage2_image[3];
+                        stage3_image[4] <= stage2_image[4] + stage2_image[5];     
+                        stage3_image[6] <= stage2_image[6] + stage2_image[7];
+                        stage3_image[8] <= stage2_image[8] + stage2_image[9];    
+                        stage3_image[10] <= stage2_image[10] + stage2_image[11];    
+                        stage3_image[12] <= stage2_image[12] + stage2_image[13];
+                        stage3_image[14] <= stage2_image[14] + stage2_image[15];
+
+                        //stage3 fftb real mul
+                        //stage3 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w0_real;
                         M2_mult2 <= w0_real;
@@ -1027,29 +1339,48 @@ always@(posedge clk) begin
                         M5_mult2 <= w0_real;
                         M6_mult2 <= w0_real;
                         M7_mult2 <= w0_real;
+
+                        //stage3 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w0_image;
+                        M10_mult2 <= w0_image;
+                        M11_mult2 <= w0_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w0_image;
+                        M14_mult2 <= w0_image;
+                        M15_mult2 <= w0_image;
                     end
-                    4'd11: begin
+                    4'd14: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage3_real[1] <= M0[47:16];
-                        stage3_real[3] <= M1[47:16];
-                        stage3_real[5] <= M2[47:16];
-                        stage3_real[7] <= M3[47:16];
-                        stage3_real[9] <= M4[47:16];
-                        stage3_real[11] <= M5[47:16];
-                        stage3_real[13] <= M6[47:16];
-                        stage3_real[15] <= M7[47:16];
+                        //stage3 fftb real get value
+                        stage3_real[1] <= M0[47:16] + M8[47:16];
+                        stage3_real[3] <= M1[47:16] + M9[47:16];
+                        stage3_real[5] <= M2[47:16] + M10[47:16];
+                        stage3_real[7] <= M3[47:16] + M11[47:16];
+                        stage3_real[9] <= M4[47:16] + M12[47:16];
+                        stage3_real[11] <= M5[47:16] + M13[47:16];
+                        stage3_real[13] <= M6[47:16] + M14[47:16];
+                        stage3_real[15] <= M7[47:16] + M15[47:16];
 
-                        stage3_image[0] <= stage2_image[0] + stage2_image[1];
-                        stage3_image[2] <= stage2_image[2] + stage2_image[3];
-                        stage3_image[4] <= stage2_image[4] + stage2_image[5];
-                        stage3_image[6] <= stage2_image[6] + stage2_image[7];  
-                        stage3_image[8] <= stage2_image[8] + stage2_image[9]; 
-                        stage3_image[10] <= stage2_image[10]+ stage2_image[11];
-                        stage3_image[12] <= stage2_image[12] + stage2_image[13];
-                        stage3_image[14] <= stage2_image[14] + stage2_image[15];
-
+                        //stage3 fftb image mul
                         //stage3 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w0_image;
                         M2_mult2 <= w0_image;
@@ -1058,86 +1389,38 @@ always@(posedge clk) begin
                         M5_mult2 <= w0_image;
                         M6_mult2 <= w0_image;
                         M7_mult2 <= w0_image;
-                    end
-                    4'd12: begin
-                        input_fir[read_count] <= fir_d;
 
-                        stage3_image[1] <= M0[47:16];
-                        stage3_image[3] <= M1[47:16];
-                        stage3_image[5] <= M2[47:16];
-                        stage3_image[7] <= M3[47:16];
-                        stage3_image[9] <= M4[47:16];
-                        stage3_image[11] <= M5[47:16];
-                        stage3_image[13] <= M6[47:16];
-                        stage3_image[15] <= M7[47:16];
-                        
-                        //stage3 (d-b) * image
-                        M0_mult1 <= stage1_image[1] - stage1_image[0];                             
-                        M1_mult1 <= stage1_image[3] - stage1_image[2];                
-                        M2_mult1 <= stage1_image[5] - stage1_image[4];                 
-                        M3_mult1 <= stage1_image[7] - stage1_image[6];                      
-                        M4_mult1 <= stage1_image[9] - stage1_image[8];              
-                        M5_mult1 <= stage1_image[11] - stage1_image[10];
-                        M6_mult1 <= stage1_image[13] - stage1_image[12];
-                        M7_mult1 <= stage1_image[15] - stage1_image[14];
-                    end
-                    4'd13: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage3_image[1] <= M0[47:16];
-                        stage3_image[3] <= M1[47:16];
-                        stage3_image[5] <= M2[47:16];
-                        stage3_image[7] <= M3[47:16];
-                        stage3_image[9] <= M4[47:16];
-                        stage3_image[11] <= M5[47:16];
-                        stage3_image[13] <= M6[47:16];
-                        stage3_image[15] <= M7[47:16];
-
-                        //stage2 (d-b) * image
-                        M0_mult1 <= stage2_image[1] - stage2_image[0];                             
-                        M1_mult1 <= stage2_image[3] - stage2_image[2];                
-                        M2_mult1 <= stage2_image[5] - stage2_image[4];                 
-                        M3_mult1 <= stage2_image[7] - stage2_image[6];                      
-                        M4_mult1 <= stage2_image[9] - stage2_image[8];              
-                        M5_mult1 <= stage2_image[11] - stage2_image[10];
-                        M6_mult1 <= stage2_image[13] - stage2_image[12];
-                        M7_mult1 <= stage2_image[15] - stage2_image[14];
-                    end
-                    4'd14: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage3_real[1] <= stage3_real[1] + M0[47:16];
-                        stage3_real[3] <= stage3_real[3] + M1[47:16];
-                        stage3_real[5] <= stage3_real[5] + M2[47:16];
-                        stage3_real[7] <= stage3_real[7] + M3[47:16];
-                        stage3_real[9] <= stage3_real[9] + M4[47:16];
-                        stage3_real[11] <= stage3_real[11] + M5[47:16];
-                        stage3_real[13] <= stage3_real[13] + M6[47:16];
-                        stage3_real[15] <= stage3_real[15] + M7[47:16];
-
-                        //stage3 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w0_real;
-                        M2_mult2 <= w0_real;
-                        M3_mult2 <= w0_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w0_real;
-                        M6_mult2 <= w0_real;
-                        M7_mult2 <= w0_real;
+                        //stage3 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w0_real;
+                        M10_mult2 <= w0_real;
+                        M11_mult2 <= w0_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w0_real;
+                        M14_mult2 <= w0_real;
+                        M15_mult2 <= w0_real;
                         
                     end
                     4'd15: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage3_image[1] <= stage3_image[1] - M0[47:16];
-                        stage3_image[3] <= stage3_image[3] - M1[47:16];
-                        stage3_image[5] <= stage3_image[5] - M2[47:16];
-                        stage3_image[7] <= stage3_image[7] - M3[47:16];
-                        stage3_image[9] <= stage3_image[9] - M4[47:16];
-                        stage3_image[11] <= stage3_image[11] - M5[47:16];
-                        stage3_image[13] <= stage3_image[13] - M6[47:16];
-                        stage3_image[15] <= stage3_image[15] - M7[47:16];
-                        //stage 3 finish
+                        stage3_image[1] <= M0[47:16] + M8[47:16];
+                        stage3_image[3] <= M1[47:16] + M9[47:16];
+                        stage3_image[5] <= M2[47:16] + M10[47:16];
+                        stage3_image[7] <= M3[47:16] + M11[47:16];
+                        stage3_image[9] <= M4[47:16] + M12[47:16];
+                        stage3_image[11] <= M5[47:16] + M13[47:16];
+                        stage3_image[13] <= M6[47:16] + M14[47:16];
+                        stage3_image[15] <= M7[47:16] + M15[47:16];
+                        //stage3 finish
 
                         
                     end
@@ -1168,24 +1451,6 @@ always@(posedge clk) begin
                         proceed_fir[14] <= input_fir[14];
                         proceed_fir[15] <= input_fir[15];
 
-                        //stage0 (a-c) * real
-                        M0_mult1 <= {{8{input_fir[0][15]}}, input_fir[0], 8'd0} - {{8{input_fir[8][15]}}, input_fir[8], 8'd0};                                    
-                        M1_mult1 <= {{8{input_fir[1][15]}}, input_fir[1], 8'd0} - {{8{input_fir[9][15]}}, input_fir[9], 8'd0};                       
-                        M2_mult1 <= {{8{input_fir[2][15]}}, input_fir[2], 8'd0} - {{8{input_fir[10][15]}}, input_fir[10], 8'd0};                      
-                        M3_mult1 <= {{8{input_fir[3][15]}}, input_fir[3], 8'd0} - {{8{input_fir[11][15]}}, input_fir[11], 8'd0};                        
-                        M4_mult1 <= {{8{input_fir[4][15]}}, input_fir[4], 8'd0} - {{8{input_fir[12][15]}}, input_fir[12], 8'd0};                  
-                        M5_mult1 <= {{8{input_fir[5][15]}}, input_fir[5], 8'd0} - {{8{input_fir[13][15]}}, input_fir[13], 8'd0};
-                        M6_mult1 <= {{8{input_fir[6][15]}}, input_fir[6], 8'd0} - {{8{input_fir[14][15]}}, input_fir[14], 8'd0};
-                        M7_mult1 <= {{8{input_fir[7][15]}}, input_fir[7], 8'd0} - {{8{input_fir[15][15]}}, input_fir[15], 8'd0};
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w1_real;
-                        M2_mult2 <= w2_real;
-                        M3_mult2 <= w3_real;
-                        M4_mult2 <= w4_real;
-                        M5_mult2 <= w5_real;
-                        M6_mult2 <= w6_real;
-                        M7_mult2 <= w7_real;
-
                         //trans
                         fft_valid <= 1'b1;
                         fft_d0  <= stage3_real[0][23:8];
@@ -1205,55 +1470,31 @@ always@(posedge clk) begin
                         fft_d14 <= stage3_real[7][23:8];
                         fft_d15 <= stage3_real[15][23:8];
 
+                        //stage0 (a-c) buffer
+                        mul_buf[0] <= {{8{input_fir[0][15]}}, input_fir[0], 8'd0} - {{8{input_fir[8][15]}}, input_fir[8], 8'd0};
+                        mul_buf[1] <= {{8{input_fir[1][15]}}, input_fir[1], 8'd0} - {{8{input_fir[9][15]}}, input_fir[9], 8'd0};
+                        mul_buf[2] <= {{8{input_fir[2][15]}}, input_fir[2], 8'd0} - {{8{input_fir[10][15]}}, input_fir[10], 8'd0};
+                        mul_buf[3] <= {{8{input_fir[3][15]}}, input_fir[3], 8'd0} - {{8{input_fir[11][15]}}, input_fir[11], 8'd0};
+                        mul_buf[4] <= {{8{input_fir[4][15]}}, input_fir[4], 8'd0} - {{8{input_fir[12][15]}}, input_fir[12], 8'd0};
+                        mul_buf[5] <= {{8{input_fir[5][15]}}, input_fir[5], 8'd0} - {{8{input_fir[13][15]}}, input_fir[13], 8'd0};
+                        mul_buf[6] <= {{8{input_fir[6][15]}}, input_fir[6], 8'd0} - {{8{input_fir[14][15]}}, input_fir[14], 8'd0};
+                        mul_buf[7] <= {{8{input_fir[7][15]}}, input_fir[7], 8'd0} - {{8{input_fir[15][15]}}, input_fir[15], 8'd0};
+                        //stage0 (b-d) buffer
+                        mul_buf[8] <= 32'd0;
+                        mul_buf[9] <= 32'd0;
+                        mul_buf[10] <= 32'd0;
+                        mul_buf[11] <= 32'd0;
+                        mul_buf[12] <= 32'd0;
+                        mul_buf[13] <= 32'd0;
+                        mul_buf[14] <= 32'd0;
+                        mul_buf[15] <= 32'd0;
+
                     end
                     //stage0 
                     4'd1: begin
                         input_fir[read_count] <= fir_d;
-                        stage0_real[0] <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} + {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};
-                        stage0_real[1] <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} + {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};
-                        stage0_real[2] <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} + {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
-                        stage0_real[3] <= {{8{proceed_fir[3][15]}}, proceed_fir[3], 8'd0} + {{8{proceed_fir[11][15]}}, proceed_fir[11], 8'd0};
-                        stage0_real[4] <= {{8{proceed_fir[4][15]}}, proceed_fir[4], 8'd0} + {{8{proceed_fir[12][15]}}, proceed_fir[12], 8'd0};
-                        stage0_real[5] <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} + {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
-                        stage0_real[6] <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} + {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
-                        stage0_real[7] <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} + {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
-                                                
-                        stage0_real[8] <= M0[47:16];
-                        stage0_real[9] <= M1[47:16];
-                        stage0_real[10] <= M2[47:16];
-                        stage0_real[11] <= M3[47:16];
-                        stage0_real[12] <= M4[47:16];
-                        stage0_real[13] <= M5[47:16];
-                        stage0_real[14] <= M6[47:16];
-                        stage0_real[15] <= M7[47:16];
-
-                        stage0_image[0] <= 32'd0;
-                        stage0_image[1] <= 32'd0;
-                        stage0_image[2] <= 32'd0;
-                        stage0_image[3] <= 32'd0;
-                        stage0_image[4] <= 32'd0;
-                        stage0_image[5] <= 32'd0;
-                        stage0_image[6] <= 32'd0;
-                        stage0_image[7] <= 32'd0;
-
-                        //stage0 (a-c) * image
-                        M0_mult1 <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} - {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};  
-                        M1_mult1 <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} - {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};  
-                        M2_mult1 <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} - {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
-                        M3_mult1 <= {{8{proceed_fir[3][15]}}, proceed_fir[3], 8'd0} - {{8{proceed_fir[11][15]}}, proceed_fir[11], 8'd0};
-                        M4_mult1 <= {{8{proceed_fir[4][15]}}, proceed_fir[4], 8'd0} - {{8{proceed_fir[12][15]}}, proceed_fir[12], 8'd0};
-                        M5_mult1 <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} - {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
-                        M6_mult1 <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} - {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
-                        M7_mult1 <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} - {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
-                        M0_mult2 <= w0_image;
-                        M1_mult2 <= w1_image;
-                        M2_mult2 <= w2_image;
-                        M3_mult2 <= w3_image;
-                        M4_mult2 <= w4_image;
-                        M5_mult2 <= w5_image;
-                        M6_mult2 <= w6_image;
-                        M7_mult2 <= w7_image;
-
+                        
+                        //trans
                         fft_d0 <= stage3_image[0][23:8];
                         fft_d1 <= stage3_image[8][23:8];
                         fft_d2 <= stage3_image[4][23:8];
@@ -1270,22 +1511,161 @@ always@(posedge clk) begin
                         fft_d13 <= stage3_image[11][23:8];
                         fft_d14 <= stage3_image[7][23:8];
                         fft_d15 <= stage3_image[15][23:8];
+
+                        //stage0 ffta real & image
+                        stage0_real[0] <= {{8{proceed_fir[0][15]}}, proceed_fir[0], 8'd0} + {{8{proceed_fir[8][15]}}, proceed_fir[8], 8'd0};
+                        stage0_real[1] <= {{8{proceed_fir[1][15]}}, proceed_fir[1], 8'd0} + {{8{proceed_fir[9][15]}}, proceed_fir[9], 8'd0};
+                        stage0_real[2] <= {{8{proceed_fir[2][15]}}, proceed_fir[2], 8'd0} + {{8{proceed_fir[10][15]}}, proceed_fir[10], 8'd0};
+                        stage0_real[3] <= {{8{proceed_fir[3][15]}}, proceed_fir[3], 8'd0} + {{8{proceed_fir[11][15]}}, proceed_fir[11], 8'd0};
+                        stage0_real[4] <= {{8{proceed_fir[4][15]}}, proceed_fir[4], 8'd0} + {{8{proceed_fir[12][15]}}, proceed_fir[12], 8'd0};
+                        stage0_real[5] <= {{8{proceed_fir[5][15]}}, proceed_fir[5], 8'd0} + {{8{proceed_fir[13][15]}}, proceed_fir[13], 8'd0};
+                        stage0_real[6] <= {{8{proceed_fir[6][15]}}, proceed_fir[6], 8'd0} + {{8{proceed_fir[14][15]}}, proceed_fir[14], 8'd0};
+                        stage0_real[7] <= {{8{proceed_fir[7][15]}}, proceed_fir[7], 8'd0} + {{8{proceed_fir[15][15]}}, proceed_fir[15], 8'd0};
+
+                        stage0_image[0] <= 32'd0;
+                        stage0_image[1] <= 32'd0;
+                        stage0_image[2] <= 32'd0;
+                        stage0_image[3] <= 32'd0;
+                        stage0_image[4] <= 32'd0;
+                        stage0_image[5] <= 32'd0;
+                        stage0_image[6] <= 32'd0;
+                        stage0_image[7] <= 32'd0;
+
+                        //stage0 fftb real mul
+                        //stage0 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
+                        M0_mult2 <= w0_real;
+                        M1_mult2 <= w1_real;
+                        M2_mult2 <= w2_real;
+                        M3_mult2 <= w3_real;
+                        M4_mult2 <= w4_real;
+                        M5_mult2 <= w5_real;
+                        M6_mult2 <= w6_real;
+                        M7_mult2 <= w7_real;
+
+                        //stage0 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w1_image;
+                        M10_mult2 <= w2_image;
+                        M11_mult2 <= w3_image;
+                        M12_mult2 <= w4_image;
+                        M13_mult2 <= w5_image;
+                        M14_mult2 <= w6_image;
+                        M15_mult2 <= w7_image;
+                        
                     end
                     4'd2: begin
-                        fft_valid <= 0;
                         input_fir[read_count] <= fir_d;
                         
-                        stage0_image[8]  <= M0[47:16];
-                        stage0_image[9]  <= M1[47:16];
-                        stage0_image[10] <= M2[47:16];
-                        stage0_image[11] <= M3[47:16];
-                        stage0_image[12] <= M4[47:16];
-                        stage0_image[13] <= M5[47:16];
-                        stage0_image[14] <= M6[47:16];
-                        stage0_image[15] <= M7[47:16];
-                        //stage 0 finish
+                        //trans end
+                        fft_valid <= 0;
+                        
+                        //stage 0 fftb real get value
+                        stage0_real[8] <= M0[47:16] + M8[47:16];
+                        stage0_real[9] <= M1[47:16] + M9[47:16];
+                        stage0_real[10] <= M2[47:16] + M10[47:16];
+                        stage0_real[11] <= M3[47:16] + M11[47:16];
+                        stage0_real[12] <= M4[47:16] + M12[47:16];
+                        stage0_real[13] <= M5[47:16] + M13[47:16];
+                        stage0_real[14] <= M6[47:16] + M14[47:16];
+                        stage0_real[15] <= M7[47:16] + M15[47:16];
 
-                        //stage 1 
+                        //stage0 fftb image mul
+                        //stage0 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
+                        M0_mult2 <= w0_image;
+                        M1_mult2 <= w1_image;
+                        M2_mult2 <= w2_image;
+                        M3_mult2 <= w3_image;
+                        M4_mult2 <= w4_image;
+                        M5_mult2 <= w5_image;
+                        M6_mult2 <= w6_image;
+                        M7_mult2 <= w7_image;
+
+                        //stage0 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w1_real;
+                        M10_mult2 <= w2_real;
+                        M11_mult2 <= w3_real;
+                        M12_mult2 <= w4_real;
+                        M13_mult2 <= w5_real;
+                        M14_mult2 <= w6_real;
+                        M15_mult2 <= w7_real;
+
+                                                                                                                                                                                                                                                                                                          
+                    end
+                    4'd3: begin
+                        input_fir[read_count] <= fir_d;
+                        
+                        stage0_image[8] <= M0[47:16] + M8[47:16];
+                        stage0_image[9] <= M1[47:16] + M9[47:16];
+                        stage0_image[10] <= M2[47:16] + M10[47:16];
+                        stage0_image[11] <= M3[47:16] + M11[47:16];
+                        stage0_image[12] <= M4[47:16] + M12[47:16];
+                        stage0_image[13] <= M5[47:16] + M13[47:16];
+                        stage0_image[14] <= M6[47:16] + M14[47:16];
+                        stage0_image[15] <= M7[47:16] + M15[47:16];
+                        //stage0 finish
+
+                    end
+                    4'd4: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage1 
+                        //stage1 (a-c) buffer
+                        mul_buf[0] <= stage0_real[0] - stage0_real[4];  
+                        mul_buf[1] <= stage0_real[1] - stage0_real[5];  
+                        mul_buf[2] <= stage0_real[2] - stage0_real[6];  
+                        mul_buf[3] <= stage0_real[3] - stage0_real[7];  
+                        mul_buf[4] <= stage0_real[8] - stage0_real[12]; 
+                        mul_buf[5] <= stage0_real[9] - stage0_real[13];
+                        mul_buf[6] <= stage0_real[10] - stage0_real[14];
+                        mul_buf[7] <= stage0_real[11] - stage0_real[15];
+                        //stage1 (b-d) buffer
+                        mul_buf[8] <= stage0_image[0] - stage0_image[4];  
+                        mul_buf[9] <= stage0_image[1] - stage0_image[5];  
+                        mul_buf[10] <= stage0_image[2] - stage0_image[6];  
+                        mul_buf[11] <= stage0_image[3] - stage0_image[7];  
+                        mul_buf[12] <= stage0_image[8] - stage0_image[12]; 
+                        mul_buf[13] <= stage0_image[9] - stage0_image[13];
+                        mul_buf[14] <= stage0_image[10] - stage0_image[14];
+                        mul_buf[15] <= stage0_image[11] - stage0_image[15];
+                   
+                    end
+                    4'd5: begin
+                        input_fir[read_count] <= fir_d;
+                        
+                        //stage1 ffta real & image 
                         stage1_real[0] <= stage0_real[0] + stage0_real[4];
                         stage1_real[1] <= stage0_real[1] + stage0_real[5];
                         stage1_real[2] <= stage0_real[2] + stage0_real[6];
@@ -1295,15 +1675,25 @@ always@(posedge clk) begin
                         stage1_real[10] <= stage0_real[10] + stage0_real[14];
                         stage1_real[11] <= stage0_real[11] + stage0_real[15];
 
-                        // stage 1 (a-c) * real
-                        M0_mult1 <= stage0_real[0] - stage0_real[4];                                  
-                        M1_mult1 <= stage0_real[1] - stage0_real[5];                     
-                        M2_mult1 <= stage0_real[2] - stage0_real[6];                      
-                        M3_mult1 <= stage0_real[3] - stage0_real[7];                        
-                        M4_mult1 <= stage0_real[8] - stage0_real[12];                  
-                        M5_mult1 <= stage0_real[9] - stage0_real[13];
-                        M6_mult1 <= stage0_real[10] - stage0_real[14];
-                        M7_mult1 <= stage0_real[11] - stage0_real[15];
+                        stage1_image[0] <= stage0_image[0] + stage0_image[4];
+                        stage1_image[1] <= stage0_image[1] + stage0_image[5];
+                        stage1_image[2] <= stage0_image[2] + stage0_image[6];     
+                        stage1_image[3] <= stage0_image[3] + stage0_image[7];
+                        stage1_image[8] <= stage0_image[8] + stage0_image[12];    
+                        stage1_image[9] <= stage0_image[9] + stage0_image[13];    
+                        stage1_image[10] <= stage0_image[10] + stage0_image[14];
+                        stage1_image[11] <= stage0_image[11] + stage0_image[15];
+
+                        //stage1 fftb real mul
+                        //stage1 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w2_real;
                         M2_mult2 <= w4_real;
@@ -1312,30 +1702,49 @@ always@(posedge clk) begin
                         M5_mult2 <= w2_real;
                         M6_mult2 <= w4_real;
                         M7_mult2 <= w6_real;
-                                                                                                                                                                                                                                                                                                          
+
+                        //stage1 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w2_image;
+                        M10_mult2 <= w4_image;
+                        M11_mult2 <= w6_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w2_image;
+                        M14_mult2 <= w4_image;
+                        M15_mult2 <= w6_image;
+
                     end
-                    4'd3: begin
+                    4'd6: begin
                         input_fir[read_count] <= fir_d;
-                        
-                        stage1_real[4] <= M0[47:16];
-                        stage1_real[5] <= M1[47:16];
-                        stage1_real[6] <= M2[47:16];
-                        stage1_real[7] <= M3[47:16];
-                        stage1_real[12] <= M4[47:16];
-                        stage1_real[13] <= M5[47:16];
-                        stage1_real[14] <= M6[47:16];
-                        stage1_real[15] <= M7[47:16];
 
-                        stage1_image[0] <= stage0_image[0] + stage0_image[4];
-                        stage1_image[1] <= stage0_image[1] + stage0_image[5];
-                        stage1_image[2] <= stage0_image[2] + stage0_image[6];                
-                        stage1_image[3] <= stage0_image[3] + stage0_image[7];
-                        stage1_image[8] <= stage0_image[8] + stage0_image[12];                       
-                        stage1_image[9] <= stage0_image[9] + stage0_image[13];                      
-                        stage1_image[10] <= stage0_image[10] + stage0_image[14];
-                        stage1_image[11] <= stage0_image[11] + stage0_image[15];
+                        //stage1 fftb real get value
+                        stage1_real[4] <= M0[47:16] + M8[47:16];
+                        stage1_real[5] <= M1[47:16] + M9[47:16];
+                        stage1_real[6] <= M2[47:16] + M10[47:16];
+                        stage1_real[7] <= M3[47:16] + M11[47:16];
+                        stage1_real[12] <= M4[47:16] + M12[47:16];
+                        stage1_real[13] <= M5[47:16] + M13[47:16];
+                        stage1_real[14] <= M6[47:16] + M14[47:16];
+                        stage1_real[15] <= M7[47:16] + M15[47:16];
 
-                        //stage 1 (a-c) * image
+                        //stage1 fftb image mul
+                        //stage1 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w2_image;
                         M2_mult2 <= w4_image;
@@ -1345,84 +1754,94 @@ always@(posedge clk) begin
                         M6_mult2 <= w4_image;
                         M7_mult2 <= w6_image;
 
-                    end
-                    4'd4: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage1_image[4] <= M0[47:16];
-                        stage1_image[5] <= M1[47:16];
-                        stage1_image[6] <= M2[47:16];
-                        stage1_image[7] <= M3[47:16];
-                        stage1_image[12] <= M4[47:16];
-                        stage1_image[13] <= M5[47:16];
-                        stage1_image[14] <= M6[47:16];
-                        stage1_image[15] <= M7[47:16];
-
-                        //stage 1 (d-b) * image
-                        M0_mult1 <= stage0_image[4] - stage0_image[0];    
-                        M1_mult1 <= stage0_image[5] - stage0_image[1];    
-                        M2_mult1 <= stage0_image[6] - stage0_image[2];    
-                        M3_mult1 <= stage0_image[7] - stage0_image[3];    
-                        M4_mult1 <= stage0_image[12] - stage0_image[8];   
-                        M5_mult1 <= stage0_image[13] - stage0_image[9];
-                        M6_mult1 <= stage0_image[14] - stage0_image[10];
-                        M7_mult1 <= stage0_image[15] - stage0_image[11];
-                   
-                    end
-                    4'd5: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage1_real[4] <=  stage1_real[4] + M0[47:16];
-                        stage1_real[5] <=  stage1_real[5] + M1[47:16];
-                        stage1_real[6] <=  stage1_real[6] + M2[47:16];
-                        stage1_real[7] <=  stage1_real[7] + M3[47:16];
-                        stage1_real[12] <= stage1_real[12] + M4[47:16];
-                        stage1_real[13] <= stage1_real[13] + M5[47:16];
-                        stage1_real[14] <= stage1_real[14] + M6[47:16];
-                        stage1_real[15] <= stage1_real[15] + M7[47:16];
-
-                        //stage 1 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w2_real;
-                        M2_mult2 <= w4_real;
-                        M3_mult2 <= w6_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w2_real;
-                        M6_mult2 <= w4_real;
-                        M7_mult2 <= w6_real;
-                    end
-                    4'd6: begin
-                        input_fir[read_count] <= fir_d;
+                        //stage1 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w2_real;
+                        M10_mult2 <= w4_real;
+                        M11_mult2 <= w6_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w2_real;
+                        M14_mult2 <= w4_real;
+                        M15_mult2 <= w6_real;
                         
-                        stage1_image[4] <= stage1_image[4] - M0[47:16];
-                        stage1_image[5] <= stage1_image[5] - M1[47:16];
-                        stage1_image[6] <= stage1_image[6] - M2[47:16];
-                        stage1_image[7] <= stage1_image[7] - M3[47:16];
-                        stage1_image[12] <= stage1_image[12] - M4[47:16];
-                        stage1_image[13] <= stage1_image[13] - M5[47:16];
-                        stage1_image[14] <= stage1_image[14] - M6[47:16];
-                        stage1_image[15] <= stage1_image[15] - M7[47:16];
+                    end
+                    4'd7: begin
+                        input_fir[read_count] <= fir_d;
+
+                        stage1_image[4] <= M0[47:16] + M8[47:16];
+                        stage1_image[5] <= M1[47:16] + M9[47:16];
+                        stage1_image[6] <= M2[47:16] + M10[47:16];
+                        stage1_image[7] <= M3[47:16] + M11[47:16];
+                        stage1_image[12] <= M4[47:16] + M12[47:16];
+                        stage1_image[13] <= M5[47:16] + M13[47:16];
+                        stage1_image[14] <= M6[47:16] + M14[47:16];
+                        stage1_image[15] <= M7[47:16] + M15[47:16];
                         //stage1 finish
 
-                        //stage2
+                    end
+                    4'd8: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage2 
+                        //stage2 (a-c) buffer
+                        mul_buf[0] <= stage1_real[0] - stage1_real[2];  
+                        mul_buf[1] <= stage1_real[1] - stage1_real[3];  
+                        mul_buf[2] <= stage1_real[4] - stage1_real[6];  
+                        mul_buf[3] <= stage1_real[5] - stage1_real[7];  
+                        mul_buf[4] <= stage1_real[8] - stage1_real[10]; 
+                        mul_buf[5] <= stage1_real[9] - stage1_real[11];
+                        mul_buf[6] <= stage1_real[12] - stage1_real[14];
+                        mul_buf[7] <= stage1_real[13] - stage1_real[15];
+                        //stage2 (b-d) buffer
+                        mul_buf[8] <= stage1_image[0] - stage1_image[2];  
+                        mul_buf[9] <= stage1_image[1] - stage1_image[3];  
+                        mul_buf[10] <= stage1_image[4] - stage1_image[6];  
+                        mul_buf[11] <= stage1_image[5] - stage1_image[7];  
+                        mul_buf[12] <= stage1_image[8] - stage1_image[10]; 
+                        mul_buf[13] <= stage1_image[9] - stage1_image[11];
+                        mul_buf[14] <= stage1_image[12] - stage1_image[14];
+                        mul_buf[15] <= stage1_image[13] - stage1_image[15];
+                    end
+                    4'd9: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage2 ffta real & image 
                         stage2_real[0] <= stage1_real[0] + stage1_real[2];
                         stage2_real[1] <= stage1_real[1] + stage1_real[3];
                         stage2_real[4] <= stage1_real[4] + stage1_real[6];
                         stage2_real[5] <= stage1_real[5] + stage1_real[7];   
-                        stage2_real[8] <= stage1_real[8] + stage1_real[10]; 
+                        stage2_real[8] <= stage1_real[8] + stage1_real[10];
                         stage2_real[9] <= stage1_real[9] + stage1_real[11];
                         stage2_real[12] <= stage1_real[12] + stage1_real[14];
                         stage2_real[13] <= stage1_real[13] + stage1_real[15];
 
-                        //stage2 (a-c) * real
-                        M0_mult1 <= stage1_real[0] - stage1_real[2];                             
-                        M1_mult1 <= stage1_real[1] - stage1_real[3];                
-                        M2_mult1 <= stage1_real[4] - stage1_real[6];                 
-                        M3_mult1 <= stage1_real[5] - stage1_real[7];                      
-                        M4_mult1 <= stage1_real[8] - stage1_real[10];              
-                        M5_mult1 <= stage1_real[9] - stage1_real[11];
-                        M6_mult1 <= stage1_real[12] - stage1_real[14];
-                        M7_mult1 <= stage1_real[13] - stage1_real[15];
+                        stage2_image[0] <= stage1_image[0] + stage1_image[2];
+                        stage2_image[1] <= stage1_image[1] + stage1_image[3];
+                        stage2_image[4] <= stage1_image[4] + stage1_image[6];     
+                        stage2_image[5] <= stage1_image[5] + stage1_image[7];
+                        stage2_image[8] <= stage1_image[8] + stage1_image[10];    
+                        stage2_image[9] <= stage1_image[9] + stage1_image[11];    
+                        stage2_image[12] <= stage1_image[12] + stage1_image[14];
+                        stage2_image[13] <= stage1_image[13] + stage1_image[15];
+
+                        //stage2 fftb real mul
+                        //stage2 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w4_real;
                         M2_mult2 <= w0_real;
@@ -1431,29 +1850,48 @@ always@(posedge clk) begin
                         M5_mult2 <= w4_real;
                         M6_mult2 <= w0_real;
                         M7_mult2 <= w4_real;
+
+                        //stage2 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w4_image;
+                        M10_mult2 <= w0_image;
+                        M11_mult2 <= w4_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w4_image;
+                        M14_mult2 <= w0_image;
+                        M15_mult2 <= w4_image;
                     end
-                    4'd7: begin
+                    4'd10: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage2_real[2] <= M0[47:16];
-                        stage2_real[3] <= M1[47:16];
-                        stage2_real[6] <= M2[47:16];
-                        stage2_real[7] <= M3[47:16];
-                        stage2_real[10] <= M4[47:16];
-                        stage2_real[11] <= M5[47:16];
-                        stage2_real[14] <= M6[47:16];
-                        stage2_real[15] <= M7[47:16];
+                        //stage2 fftb real get value
+                        stage2_real[2] <= M0[47:16] + M8[47:16];
+                        stage2_real[3] <= M1[47:16] + M9[47:16];
+                        stage2_real[6] <= M2[47:16] + M10[47:16];
+                        stage2_real[7] <= M3[47:16] + M11[47:16];
+                        stage2_real[10] <= M4[47:16] + M12[47:16];
+                        stage2_real[11] <= M5[47:16] + M13[47:16];
+                        stage2_real[14] <= M6[47:16] + M14[47:16];
+                        stage2_real[15] <= M7[47:16] + M15[47:16];
 
-                        stage2_image[0] <= stage1_image[0] + stage1_image[2];
-                        stage2_image[1] <= stage1_image[1] + stage1_image[3];
-                        stage2_image[4] <= stage1_image[4] + stage1_image[6];
-                        stage2_image[5] <= stage1_image[5] + stage1_image[7];   
-                        stage2_image[8] <= stage1_image[8] + stage1_image[10]; 
-                        stage2_image[9] <= stage1_image[9] + stage1_image[11];
-                        stage2_image[12] <= stage1_image[12] + stage1_image[14];
-                        stage2_image[13] <= stage1_image[13] + stage1_image[15];
-
+                        //stage2 fftb image mul
                         //stage2 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w4_image;
                         M2_mult2 <= w0_image;
@@ -1462,83 +1900,93 @@ always@(posedge clk) begin
                         M5_mult2 <= w4_image;
                         M6_mult2 <= w0_image;
                         M7_mult2 <= w4_image;
+
+                        //stage2 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w4_real;
+                        M10_mult2 <= w0_real;
+                        M11_mult2 <= w4_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w4_real;
+                        M14_mult2 <= w0_real;
+                        M15_mult2 <= w4_real;
                     end
-                    4'd8: begin
+                    4'd11: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage2_image[2] <= M0[47:16];
-                        stage2_image[3] <= M1[47:16];
-                        stage2_image[6] <= M2[47:16];
-                        stage2_image[7] <= M3[47:16];
-                        stage2_image[10] <= M4[47:16];
-                        stage2_image[11] <= M5[47:16];
-                        stage2_image[14] <= M6[47:16];
-                        stage2_image[15] <= M7[47:16];
-
-                        //stage2 (d-b) * image
-                        M0_mult1 <= stage1_image[2] - stage1_image[0];                             
-                        M1_mult1 <= stage1_image[3] - stage1_image[1];                
-                        M2_mult1 <= stage1_image[6] - stage1_image[4];                 
-                        M3_mult1 <= stage1_image[7] - stage1_image[5];                      
-                        M4_mult1 <= stage1_image[10] - stage1_image[8];              
-                        M5_mult1 <= stage1_image[11] - stage1_image[9];
-                        M6_mult1 <= stage1_image[14] - stage1_image[12];
-                        M7_mult1 <= stage1_image[15] - stage1_image[13];
-                    end
-                    4'd9: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage2_real[2] <= stage2_real[2] + M0[47:16];
-                        stage2_real[3] <= stage2_real[3] + M1[47:16];
-                        stage2_real[6] <= stage2_real[6] + M2[47:16];
-                        stage2_real[7] <= stage2_real[7] + M3[47:16];
-                        stage2_real[10] <= stage2_real[10] + M4[47:16];
-                        stage2_real[11] <= stage2_real[11] + M5[47:16];
-                        stage2_real[14] <= stage2_real[14] + M6[47:16];
-                        stage2_real[15] <= stage2_real[15] + M7[47:16];
-
-                        //stage2 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w4_real;
-                        M2_mult2 <= w0_real;
-                        M3_mult2 <= w4_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w4_real;
-                        M6_mult2 <= w0_real;
-                        M7_mult2 <= w4_real;
-                    end
-                    4'd10: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage2_image[2] <= stage2_image[2] - M0[47:16];
-                        stage2_image[3] <= stage2_image[3] - M1[47:16];
-                        stage2_image[6] <= stage2_image[6] - M2[47:16];
-                        stage2_image[7] <= stage2_image[7] - M3[47:16];
-                        stage2_image[10] <= stage2_image[10] - M4[47:16];
-                        stage2_image[11] <= stage2_image[11] - M5[47:16];
-                        stage2_image[14] <= stage2_image[14] - M6[47:16];
-                        stage2_image[15] <= stage2_image[15] - M7[47:16];
+                        stage2_image[2] <= M0[47:16] + M8[47:16];
+                        stage2_image[3] <= M1[47:16] + M9[47:16];
+                        stage2_image[6] <= M2[47:16] + M10[47:16];
+                        stage2_image[7] <= M3[47:16] + M11[47:16];
+                        stage2_image[10] <= M4[47:16] + M12[47:16];
+                        stage2_image[11] <= M5[47:16] + M13[47:16];
+                        stage2_image[14] <= M6[47:16] + M14[47:16];
+                        stage2_image[15] <= M7[47:16] + M15[47:16];
                         //stage2 finish
+                    end
+                    4'd12: begin
+                        input_fir[read_count] <= fir_d;
 
-                        //stage3
+                        //stage3 
+                        //stage3 (a-c) buffer
+                        mul_buf[0] <= stage2_real[0] - stage2_real[1];  
+                        mul_buf[1] <= stage2_real[2] - stage2_real[3];  
+                        mul_buf[2] <= stage2_real[4] - stage2_real[5];  
+                        mul_buf[3] <= stage2_real[6] - stage2_real[7];  
+                        mul_buf[4] <= stage2_real[8] - stage2_real[9]; 
+                        mul_buf[5] <= stage2_real[10] - stage2_real[11];
+                        mul_buf[6] <= stage2_real[12] - stage2_real[13];
+                        mul_buf[7] <= stage2_real[14] - stage2_real[15];
+                        //stage3 (b-d) buffer
+                        mul_buf[8] <= stage2_image[0] - stage2_image[1];  
+                        mul_buf[9] <= stage2_image[2] - stage2_image[3];  
+                        mul_buf[10] <= stage2_image[4] - stage2_image[5];  
+                        mul_buf[11] <= stage2_image[6] - stage2_image[7];  
+                        mul_buf[12] <= stage2_image[8] - stage2_image[9]; 
+                        mul_buf[13] <= stage2_image[10]- stage2_image[11];
+                        mul_buf[14] <= stage2_image[12] - stage2_image[13];
+                        mul_buf[15] <= stage2_image[14] - stage2_image[15];
+                    end
+                    4'd13: begin
+                        input_fir[read_count] <= fir_d;
+
+                        //stage3 ffta real & image 
                         stage3_real[0] <= stage2_real[0] + stage2_real[1];
                         stage3_real[2] <= stage2_real[2] + stage2_real[3];
                         stage3_real[4] <= stage2_real[4] + stage2_real[5];
                         stage3_real[6] <= stage2_real[6] + stage2_real[7];   
-                        stage3_real[8] <= stage2_real[8] + stage2_real[9]; 
+                        stage3_real[8] <= stage2_real[8] + stage2_real[9];
                         stage3_real[10] <= stage2_real[10] + stage2_real[11];
                         stage3_real[12] <= stage2_real[12] + stage2_real[13];
                         stage3_real[14] <= stage2_real[14] + stage2_real[15];
 
-                        //stage3 (a-c) * real
-                        M0_mult1 <= stage2_real[0] - stage2_real[1];                             
-                        M1_mult1 <= stage2_real[2] - stage2_real[3];                
-                        M2_mult1 <= stage2_real[4] - stage2_real[5];                 
-                        M3_mult1 <= stage2_real[6] - stage2_real[7];                      
-                        M4_mult1 <= stage2_real[8] - stage2_real[9];              
-                        M5_mult1 <= stage2_real[10] - stage2_real[11];
-                        M6_mult1 <= stage2_real[12] - stage2_real[13];
-                        M7_mult1 <= stage2_real[14] - stage2_real[15];
+                        stage3_image[0] <= stage2_image[0] + stage2_image[1];
+                        stage3_image[2] <= stage2_image[2] + stage2_image[3];
+                        stage3_image[4] <= stage2_image[4] + stage2_image[5];     
+                        stage3_image[6] <= stage2_image[6] + stage2_image[7];
+                        stage3_image[8] <= stage2_image[8] + stage2_image[9];    
+                        stage3_image[10] <= stage2_image[10] + stage2_image[11];    
+                        stage3_image[12] <= stage2_image[12] + stage2_image[13];
+                        stage3_image[14] <= stage2_image[14] + stage2_image[15];
+
+                        //stage3 fftb real mul
+                        //stage3 (a-c) * real 
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_real;
                         M1_mult2 <= w0_real;
                         M2_mult2 <= w0_real;
@@ -1547,29 +1995,48 @@ always@(posedge clk) begin
                         M5_mult2 <= w0_real;
                         M6_mult2 <= w0_real;
                         M7_mult2 <= w0_real;
+
+                        //stage3 (d-b) * image
+                        M8_mult1 <= -mul_buf[8];
+                        M9_mult1 <= -mul_buf[9];
+                        M10_mult1 <= -mul_buf[10];
+                        M11_mult1 <= -mul_buf[11];
+                        M12_mult1 <= -mul_buf[12];
+                        M13_mult1 <= -mul_buf[13];
+                        M14_mult1 <= -mul_buf[14];
+                        M15_mult1 <= -mul_buf[15];
+                        M8_mult2 <= w0_image;
+                        M9_mult2 <= w0_image;
+                        M10_mult2 <= w0_image;
+                        M11_mult2 <= w0_image;
+                        M12_mult2 <= w0_image;
+                        M13_mult2 <= w0_image;
+                        M14_mult2 <= w0_image;
+                        M15_mult2 <= w0_image;
                     end
-                    4'd11: begin
+                    4'd14: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage3_real[1] <= M0[47:16];
-                        stage3_real[3] <= M1[47:16];
-                        stage3_real[5] <= M2[47:16];
-                        stage3_real[7] <= M3[47:16];
-                        stage3_real[9] <= M4[47:16];
-                        stage3_real[11] <= M5[47:16];
-                        stage3_real[13] <= M6[47:16];
-                        stage3_real[15] <= M7[47:16];
+                        //stage3 fftb real get value
+                        stage3_real[1] <= M0[47:16] + M8[47:16];
+                        stage3_real[3] <= M1[47:16] + M9[47:16];
+                        stage3_real[5] <= M2[47:16] + M10[47:16];
+                        stage3_real[7] <= M3[47:16] + M11[47:16];
+                        stage3_real[9] <= M4[47:16] + M12[47:16];
+                        stage3_real[11] <= M5[47:16] + M13[47:16];
+                        stage3_real[13] <= M6[47:16] + M14[47:16];
+                        stage3_real[15] <= M7[47:16] + M15[47:16];
 
-                        stage3_image[0] <= stage2_image[0] + stage2_image[1];
-                        stage3_image[2] <= stage2_image[2] + stage2_image[3];
-                        stage3_image[4] <= stage2_image[4] + stage2_image[5];
-                        stage3_image[6] <= stage2_image[6] + stage2_image[7];  
-                        stage3_image[8] <= stage2_image[8] + stage2_image[9]; 
-                        stage3_image[10] <= stage2_image[10]+ stage2_image[11];
-                        stage3_image[12] <= stage2_image[12] + stage2_image[13];
-                        stage3_image[14] <= stage2_image[14] + stage2_image[15];
-
+                        //stage3 fftb image mul
                         //stage3 (a-c) * image
+                        M0_mult1 <= mul_buf[0];
+                        M1_mult1 <= mul_buf[1];
+                        M2_mult1 <= mul_buf[2];
+                        M3_mult1 <= mul_buf[3];
+                        M4_mult1 <= mul_buf[4];
+                        M5_mult1 <= mul_buf[5];
+                        M6_mult1 <= mul_buf[6];
+                        M7_mult1 <= mul_buf[7];
                         M0_mult2 <= w0_image;
                         M1_mult2 <= w0_image;
                         M2_mult2 <= w0_image;
@@ -1578,86 +2045,38 @@ always@(posedge clk) begin
                         M5_mult2 <= w0_image;
                         M6_mult2 <= w0_image;
                         M7_mult2 <= w0_image;
-                    end
-                    4'd12: begin
-                        input_fir[read_count] <= fir_d;
 
-                        stage3_image[1] <= M0[47:16];
-                        stage3_image[3] <= M1[47:16];
-                        stage3_image[5] <= M2[47:16];
-                        stage3_image[7] <= M3[47:16];
-                        stage3_image[9] <= M4[47:16];
-                        stage3_image[11] <= M5[47:16];
-                        stage3_image[13] <= M6[47:16];
-                        stage3_image[15] <= M7[47:16];
-                        
-                        //stage3 (d-b) * image
-                        M0_mult1 <= stage1_image[1] - stage1_image[0];                             
-                        M1_mult1 <= stage1_image[3] - stage1_image[2];                
-                        M2_mult1 <= stage1_image[5] - stage1_image[4];                 
-                        M3_mult1 <= stage1_image[7] - stage1_image[6];                      
-                        M4_mult1 <= stage1_image[9] - stage1_image[8];              
-                        M5_mult1 <= stage1_image[11] - stage1_image[10];
-                        M6_mult1 <= stage1_image[13] - stage1_image[12];
-                        M7_mult1 <= stage1_image[15] - stage1_image[14];
-                    end
-                    4'd13: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage3_image[1] <= M0[47:16];
-                        stage3_image[3] <= M1[47:16];
-                        stage3_image[5] <= M2[47:16];
-                        stage3_image[7] <= M3[47:16];
-                        stage3_image[9] <= M4[47:16];
-                        stage3_image[11] <= M5[47:16];
-                        stage3_image[13] <= M6[47:16];
-                        stage3_image[15] <= M7[47:16];
-
-                        //stage2 (d-b) * image
-                        M0_mult1 <= stage2_image[1] - stage2_image[0];                             
-                        M1_mult1 <= stage2_image[3] - stage2_image[2];                
-                        M2_mult1 <= stage2_image[5] - stage2_image[4];                 
-                        M3_mult1 <= stage2_image[7] - stage2_image[6];                      
-                        M4_mult1 <= stage2_image[9] - stage2_image[8];              
-                        M5_mult1 <= stage2_image[11] - stage2_image[10];
-                        M6_mult1 <= stage2_image[13] - stage2_image[12];
-                        M7_mult1 <= stage2_image[15] - stage2_image[14];
-                    end
-                    4'd14: begin
-                        input_fir[read_count] <= fir_d;
-
-                        stage3_real[1] <= stage3_real[1] + M0[47:16];
-                        stage3_real[3] <= stage3_real[3] + M1[47:16];
-                        stage3_real[5] <= stage3_real[5] + M2[47:16];
-                        stage3_real[7] <= stage3_real[7] + M3[47:16];
-                        stage3_real[9] <= stage3_real[9] + M4[47:16];
-                        stage3_real[11] <= stage3_real[11] + M5[47:16];
-                        stage3_real[13] <= stage3_real[13] + M6[47:16];
-                        stage3_real[15] <= stage3_real[15] + M7[47:16];
-
-                        //stage3 (d-b) * real
-                        M0_mult2 <= w0_real;
-                        M1_mult2 <= w0_real;
-                        M2_mult2 <= w0_real;
-                        M3_mult2 <= w0_real;
-                        M4_mult2 <= w0_real;
-                        M5_mult2 <= w0_real;
-                        M6_mult2 <= w0_real;
-                        M7_mult2 <= w0_real;
+                        //stage3 (b-d) * real
+                        M8_mult1 <= mul_buf[8];
+                        M9_mult1 <= mul_buf[9];
+                        M10_mult1 <= mul_buf[10];
+                        M11_mult1 <= mul_buf[11];
+                        M12_mult1 <= mul_buf[12];
+                        M13_mult1 <= mul_buf[13];
+                        M14_mult1 <= mul_buf[14];
+                        M15_mult1 <= mul_buf[15];
+                        M8_mult2 <= w0_real;
+                        M9_mult2 <= w0_real;
+                        M10_mult2 <= w0_real;
+                        M11_mult2 <= w0_real;
+                        M12_mult2 <= w0_real;
+                        M13_mult2 <= w0_real;
+                        M14_mult2 <= w0_real;
+                        M15_mult2 <= w0_real;
                         
                     end
                     4'd15: begin
                         input_fir[read_count] <= fir_d;
 
-                        stage3_image[1] <= stage3_image[1] - M0[47:16];
-                        stage3_image[3] <= stage3_image[3] - M1[47:16];
-                        stage3_image[5] <= stage3_image[5] - M2[47:16];
-                        stage3_image[7] <= stage3_image[7] - M3[47:16];
-                        stage3_image[9] <= stage3_image[9] - M4[47:16];
-                        stage3_image[11] <= stage3_image[11] - M5[47:16];
-                        stage3_image[13] <= stage3_image[13] - M6[47:16];
-                        stage3_image[15] <= stage3_image[15] - M7[47:16];
-                        //stage 3 finish
+                        stage3_image[1] <= M0[47:16] + M8[47:16];
+                        stage3_image[3] <= M1[47:16] + M9[47:16];
+                        stage3_image[5] <= M2[47:16] + M10[47:16];
+                        stage3_image[7] <= M3[47:16] + M11[47:16];
+                        stage3_image[9] <= M4[47:16] + M12[47:16];
+                        stage3_image[11] <= M5[47:16] + M13[47:16];
+                        stage3_image[13] <= M6[47:16] + M14[47:16];
+                        stage3_image[15] <= M7[47:16] + M15[47:16];
+                        //stage3 finish
 
                         
                     end

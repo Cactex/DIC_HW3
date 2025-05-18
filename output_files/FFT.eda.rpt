@@ -1,5 +1,5 @@
 EDA Netlist Writer report for FFT
-Wed May 14 03:23:51 2025
+Wed May 14 17:36:29 2025
 Quartus Prime Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
 
 
@@ -37,7 +37,7 @@ https://fpgasoftware.intel.com/eula.
 +-------------------------------------------------------------------+
 ; EDA Netlist Writer Summary                                        ;
 +---------------------------+---------------------------------------+
-; EDA Netlist Writer Status ; Successful - Wed May 14 03:23:51 2025 ;
+; EDA Netlist Writer Status ; Successful - Wed May 14 17:36:29 2025 ;
 ; Revision Name             ; FFT                                   ;
 ; Top-level Entity Name     ; FFT                                   ;
 ; Family                    ; Cyclone IV E                          ;
@@ -89,7 +89,7 @@ https://fpgasoftware.intel.com/eula.
 Info: *******************************************************************
 Info: Running Quartus Prime EDA Netlist Writer
     Info: Version 20.1.1 Build 720 11/11/2020 SJ Lite Edition
-    Info: Processing started: Wed May 14 03:23:44 2025
+    Info: Processing started: Wed May 14 17:36:23 2025
 Info: Command: quartus_eda --read_settings_files=off --write_settings_files=off FFT -c FFT
 Warning (18236): Number of processors has not been specified which may cause overloading on shared machines.  Set the global assignment NUM_PARALLEL_PROCESSORS in your QSF to an appropriate value for best performance.
 Info (204019): Generated file FFT_7_1200mv_125c_slow.vo in folder "D:/NCKU/ncku4-2/DIC/HW3/simulation/modelsim/" for EDA simulation tool
@@ -101,9 +101,9 @@ Info (204019): Generated file FFT_7_1200mv_-40c_v_slow.sdo in folder "D:/NCKU/nc
 Info (204019): Generated file FFT_min_1200mv_-40c_v_fast.sdo in folder "D:/NCKU/ncku4-2/DIC/HW3/simulation/modelsim/" for EDA simulation tool
 Info (204019): Generated file FFT_v.sdo in folder "D:/NCKU/ncku4-2/DIC/HW3/simulation/modelsim/" for EDA simulation tool
 Info: Quartus Prime EDA Netlist Writer was successful. 0 errors, 1 warning
-    Info: Peak virtual memory: 4722 megabytes
-    Info: Processing ended: Wed May 14 03:23:51 2025
-    Info: Elapsed time: 00:00:07
-    Info: Total CPU time (on all processors): 00:00:08
+    Info: Peak virtual memory: 4720 megabytes
+    Info: Processing ended: Wed May 14 17:36:29 2025
+    Info: Elapsed time: 00:00:06
+    Info: Total CPU time (on all processors): 00:00:06
 
 

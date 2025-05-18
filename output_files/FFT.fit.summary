@@ -1,16 +1,16 @@
-Fitter Status : Successful - Wed May 14 03:23:32 2025
+Fitter Status : Successful - Wed May 14 17:36:11 2025
 Quartus Prime Version : 20.1.1 Build 720 11/11/2020 SJ Lite Edition
 Revision Name : FFT
 Top-level Entity Name : FFT
 Family : Cyclone IV E
 Device : EP4CE55F23A7
 Timing Models : Final
-Total logic elements : 6,417 / 55,856 ( 11 % )
-    Total combinational functions : 6,021 / 55,856 ( 11 % )
-    Dedicated logic registers : 4,019 / 55,856 ( 7 % )
-Total registers : 4019
+Total logic elements : 5,908 / 55,856 ( 11 % )
+    Total combinational functions : 4,773 / 55,856 ( 9 % )
+    Dedicated logic registers : 4,121 / 55,856 ( 7 % )
+Total registers : 4121
 Total pins : 277 / 325 ( 85 % )
 Total virtual pins : 0
 Total memory bits : 0 / 2,396,160 ( 0 % )
-Embedded Multiplier 9-bit elements : 32 / 308 ( 10 % )
+Embedded Multiplier 9-bit elements : 60 / 308 ( 19 % )
 Total PLLs : 0 / 4 ( 0 % )
